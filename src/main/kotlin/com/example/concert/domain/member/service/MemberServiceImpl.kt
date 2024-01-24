@@ -6,16 +6,22 @@ import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.member.repository.MemberRepository
 import com.example.concert.exception.MemberNameAlreadyExistsException
 import com.example.concert.exception.NotFoundException
+import com.example.concert.util.jwt.JwtUtil
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
 class MemberServiceImpl(
     private val memberRepository: MemberRepository,
-    private val passwordEncoder: PasswordEncoder,
+    private val passwordEncoder: BCryptPasswordEncoder,
+    private val jwtUtil: JwtUtil,
+    private val response: HttpServletResponse
 
-    ) : MemberService {
+
+) : MemberService {
 
     @Transactional
     override fun memberRegistration(memberRegistrationRequestDto: MemberRegistrationRequestDto): String {
@@ -33,11 +39,15 @@ class MemberServiceImpl(
                 point = 0.00
             )
         )
+        println("${memberName}, ${memberRegistrationRequestDto.password} ,${encodedPassword}")
         return "Welcome ${memberName}"
+
+
 
 
     }
 
+    @Transactional
     override fun memberLogin(memberLoginRequestDto: MemberLoginRequestDto): String {
 
         val memberName = memberLoginRequestDto.memberName
@@ -55,10 +65,11 @@ class MemberServiceImpl(
             throw NotFoundException("Id or password is wrong. Try again")
         }
 
+        val generalToken = jwtUtil.generateGeneralToken(memberName)
+
+        response.addHeader("Authorization", "Bearer $generalToken")
+
         return "Login success"
-
-
-
 
     }
 

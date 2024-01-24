@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Size
 
 data class MemberRegistrationRequestDto(
 
-    @Pattern(regexp = "^[a-z0-9]{4,10}$", message = "Invalid username")
+    @field:Pattern(regexp = "^[a-z0-9]{4,10}$", message = "Invalid username")
     val memberName: String,
 
 
-    @Size(min = 4, max = 10, message = "Password must be between 4 and 10")
-    @Pattern(regexp = "^[a-zA-Z0-9!@#\$%^&*]+$", message = "Invalid password")
+    @field:Size(min = 4, max = 12, message = "Password must be between 4 and 10")
+    @field:Pattern(regexp = "^[a-zA-Z0-9!@#\$%^&*]+$", message = "Invalid password")
     val password: String,
 )

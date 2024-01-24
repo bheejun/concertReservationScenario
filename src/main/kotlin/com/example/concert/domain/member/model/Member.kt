@@ -1,5 +1,6 @@
 package com.example.concert.domain.member.model
 
+import com.example.concert.domain.reservation.model.Reservation
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
 import java.util.UUID
@@ -11,18 +12,21 @@ data class Member(
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(columnDefinition = "BINARY(16)")
-    val id : UUID ?= null,
+    val id: UUID? = null,
 
     @Column(nullable = false)
-    var memberName : String,
+    var memberName: String,
 
     @Column(nullable = false)
-    var password : String,
+    var password: String,
 
     @Column(nullable = false)
-    var point : Double
+    var point: Double,
 
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
-//    val reservationList : String
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val reservationList : MutableList<Reservation> = mutableListOf(),
 
+
+    @Version
+    var version: Long ?= null
 )
