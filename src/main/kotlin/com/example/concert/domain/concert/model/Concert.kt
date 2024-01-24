@@ -6,10 +6,13 @@ import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
+import jakarta.persistence.Table
+import jakarta.persistence.Version
 import org.hibernate.annotations.GenericGenerator
 import java.util.*
 
 @Entity
+@Table(name = "concert")
 data class Concert(
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -21,15 +24,18 @@ data class Concert(
     var artist : String,
 
     @Column(nullable = false)
-    var location : String,
+    var concertName : String,
 
     @Convert(converter = StringListToStringConverter::class)
     var seat : List<String> = mutableListOf(),
 
     @Column(nullable = false)
-    var concertDate : Date,
+    var date : String,
 
     @Column(nullable = false)
-    var ticketPrice : Double
+    var ticketPrice : Double,
+
+    @Version
+    var version : Long ?= 0
 
 )
