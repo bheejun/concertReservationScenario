@@ -21,14 +21,20 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
 
             .csrf { it.disable() }
             .authorizeHttpRequests {
-                it.requestMatchers("/user/**","/swagger-ui/**", "/v3/api-docs/**", "/seller/**").permitAll()
+                it.requestMatchers("/member/**","/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter::class.java)
+            .headers { headers ->
+                headers.frameOptions { frameOptions ->
+                    frameOptions.disable()
+                }
+            }
 
         return http.build()!!
     }
+
 
     @Bean
     fun passwordEncoder() = BCryptPasswordEncoder()
