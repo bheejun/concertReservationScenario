@@ -5,26 +5,32 @@ import com.example.concert.domain.member.dto.request.MemberRegistrationRequestDt
 import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.member.repository.MemberRepository
 import com.example.concert.domain.member.service.MemberServiceImpl
+import com.example.concert.util.jwt.JwtUtil
+import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
 
 class MemberServiceTest {
 
     private lateinit var memberRepository : MemberRepository
-    private lateinit var passwordEncoder: PasswordEncoder
+    private lateinit var passwordEncoder: BCryptPasswordEncoder
+    private lateinit var jwtUtil: JwtUtil
+    private lateinit var response : HttpServletResponse
     private lateinit var memberService : MemberServiceImpl
 
     @BeforeEach
     fun setUp(){
         memberRepository = mock()
         passwordEncoder = mock()
-        memberService = MemberServiceImpl(memberRepository, passwordEncoder)
+        jwtUtil = mock()
+        response = mock()
+        memberService = MemberServiceImpl(memberRepository, passwordEncoder, jwtUtil, response)
     }
 
 
