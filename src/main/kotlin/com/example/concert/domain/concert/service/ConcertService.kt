@@ -10,6 +10,9 @@ import java.util.UUID
 interface ConcertService {
     fun registrationConcert(concertRegistrationRequestDto: ConcertRegistrationRequestDto) :String
 
+    fun updateConcert()
+    fun deleteConcert()
+
     fun getConcertList() : Page<ConcertResponseDto>
 
     fun getConcertSeatInfo(concertId : UUID) :ConcertSeatInfoResponseDto
