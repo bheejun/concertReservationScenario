@@ -1,4 +1,8 @@
 package com.example.concert.domain.reservation.repository
 
-interface ReservationRepository {
+import com.example.concert.domain.reservation.model.Reservation
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.UUID
+
+interface ReservationRepository : JpaRepository<Reservation, UUID>{
 }

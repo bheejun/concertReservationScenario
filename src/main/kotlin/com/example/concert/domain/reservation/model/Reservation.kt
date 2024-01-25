@@ -5,11 +5,14 @@ import com.example.concert.domain.member.model.Member
 import com.example.concert.util.StringListToStringConverter
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.Date
 import java.util.UUID
 
 @Entity
-@Table
+@Table(name = "reservation")
 data class Reservation(
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -25,9 +28,6 @@ data class Reservation(
     @JoinColumn(name = "concert_id")
     var concert : Concert,
 
-    @Column(nullable = false)
-    var numberOfTicket : Int,
-
     @Convert(converter = StringListToStringConverter::class)
     var seat : List<String> = mutableListOf(),
 
@@ -35,7 +35,7 @@ data class Reservation(
     var totalPrice : Double,
 
     @Column(nullable = false)
-    var reservationDate : Date
+    var reservationDate : ZonedDateTime ?= ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
 
 
 
