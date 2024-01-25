@@ -1,5 +1,6 @@
-package com.example.concert.util
+package com.example.concert.util.security
 
+import com.example.concert.util.enum.Role
 import com.example.concert.util.jwt.JwtFilter
 import com.example.concert.util.jwt.JwtUtil
 import org.springframework.context.annotation.Bean
@@ -22,7 +23,9 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers("/member/**","/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                    .requestMatchers("/concert/registration").hasAuthority(Role.ADMIN.toString())
                     .anyRequest().authenticated()
+
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter::class.java)
@@ -31,6 +34,7 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
                     frameOptions.disable()
                 }
             }
+            .exceptionHandling { it.accessDeniedHandler(accessDeniedHandler()) }
 
         return http.build()!!
     }
@@ -43,4 +47,7 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
     fun jwtFilter(): JwtFilter {
         return JwtFilter(jwtUtil)
     }
+
+    @Bean
+    fun accessDeniedHandler() = CustomAccessDeniedHandler()
 }

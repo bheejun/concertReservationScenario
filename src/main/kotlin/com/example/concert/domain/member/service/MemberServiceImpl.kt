@@ -72,7 +72,7 @@ class MemberServiceImpl(
             throw NotFoundException("Id or password is wrong. Try again")
         }
 
-        val generalToken = jwtUtil.generateGeneralToken(memberName)
+        val generalToken = jwtUtil.generateGeneralToken(memberName, requestMember.role)
 
         response.addHeader("Authorization", "Bearer $generalToken")
 

@@ -1,4 +1,6 @@
 package com.example.concert.util.jwt
+import com.example.concert.util.enum.Role
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
@@ -18,7 +20,7 @@ class JwtUtil(
 ) {
     private val signingKey = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
-    fun generateGeneralToken(username: String): String {
+    fun generateGeneralToken(username: String, role :Role): String {
         val expirationHours = 2
 
         return Jwts.builder()
@@ -27,11 +29,12 @@ class JwtUtil(
             .setIssuedAt(Date())
             .setExpiration(Date(System.currentTimeMillis() + expirationHours * 3600000))
             .signWith(signingKey, SignatureAlgorithm.HS512)
+            .claim("role", role.toString())
             .compact()
     }
 
     fun generateQueueToken(queueTokenDetail: QueueTokenDetail): String{
-        val expirationTime = 3000000
+        val expirationTime = 300000
 
         return Jwts.builder()
             .setSubject(queueTokenDetail.memberUUID.toString())
@@ -55,10 +58,29 @@ class JwtUtil(
 
     fun getUsernameFromToken(token: String): String? {
         return try {
-            val claims = Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token).body
+            val claims = Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .body
             claims.subject
         } catch (e: Exception) {
             null
+        }
+    }
+
+    fun getUserRoleFromToken(token: String) : String?{
+
+        return try {
+            val claims: Claims = Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .body
+
+            claims["role", String::class.java]
+        } catch (e: Exception) {
+            return null
         }
     }
 
