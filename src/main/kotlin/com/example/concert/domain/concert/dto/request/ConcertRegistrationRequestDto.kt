@@ -1,4 +1,4 @@
-package com.example.concert.domain.concert.dto
+package com.example.concert.domain.concert.dto.request
 
 data class ConcertRegistrationRequestDto(
     val artist :String,

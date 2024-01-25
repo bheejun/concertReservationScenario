@@ -9,6 +9,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.Version
 import org.hibernate.annotations.GenericGenerator
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -30,7 +31,7 @@ data class Concert(
     var seat : List<String> = mutableListOf(),
 
     @Column(nullable = false)
-    var date : String,
+    var concertDate : LocalDateTime,
 
     @Column(nullable = false)
     var ticketPrice : Double,
