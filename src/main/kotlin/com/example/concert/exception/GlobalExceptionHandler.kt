@@ -13,8 +13,10 @@ class GlobalExceptionHandler {
     private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     @ExceptionHandler(MemberNameAlreadyExistsException::class)
-    fun handleMemberNameAlreadyExistsException (ex : MemberNameAlreadyExistsException,
-                                                request: HttpServletRequest) : ResponseEntity<ErrorResponse>{
+    fun handleMemberNameAlreadyExistsException(
+        ex: MemberNameAlreadyExistsException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
         logger.info("Name duplication occurred")
         val errorResponse = ErrorResponse(
             status = HttpStatus.CONFLICT.value(),
@@ -26,8 +28,10 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NotFoundException::class)
-    fun handleNotFoundException(ex : MemberNameAlreadyExistsException,
-                                               request: HttpServletRequest) : ResponseEntity<ErrorResponse> {
+    fun handleNotFoundException(
+        ex: MemberNameAlreadyExistsException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
         logger.info("The requested resource cannot found")
         val errorResponse = ErrorResponse(
             status = HttpStatus.NOT_FOUND.value(),
@@ -38,7 +42,22 @@ class GlobalExceptionHandler {
         return ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
     }
 
-
-
-
+    @ExceptionHandler(DoesNotMatchSecretCode::class)
+    fun handleDoesNotMatchSecretCode(
+        ex: DoesNotMatchSecretCode,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        logger.info("Admin secret key does not match. Try again")
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = ex.message,
+            path = request.servletPath
+        )
+        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+    }
 }
+
+
+
+
