@@ -1,8 +1,10 @@
 package com.example.concert.domain.member.controller
 
+import com.example.concert.domain.member.dto.request.AdminRegistrationRequestDto
 import com.example.concert.domain.member.dto.request.MemberLoginRequestDto
 import com.example.concert.domain.member.dto.request.MemberRegistrationRequestDto
 import com.example.concert.domain.member.service.MemberService
+import com.example.concert.util.response.Response
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,16 +21,40 @@ class MemberController(private val memberService: MemberService) {
     @PostMapping
     @RequestMapping("/registration")
     fun memberRegistration(@Valid @RequestBody memberRegistrationRequestDto: MemberRegistrationRequestDto)
-    : ResponseEntity<String>{
-        memberService.memberRegistration(memberRegistrationRequestDto)
-        return ResponseEntity("Member registration is completed", HttpStatus.OK)
+    : ResponseEntity<Response<String>>{
+
+        val response = Response(
+            status = HttpStatus.OK,
+            message = null,
+            data = memberService.memberRegistration(memberRegistrationRequestDto)
+        )
+        return ResponseEntity(response, HttpStatus.OK)
+
+    }
+
+    @PostMapping
+    @RequestMapping("/registration/admin")
+    fun adminRegistration(@Valid @RequestBody adminRegistrationRequestDto: AdminRegistrationRequestDto)
+    : ResponseEntity<Response<String>>{
+        val response = Response(
+            status = HttpStatus.OK,
+            message = null,
+            data = memberService.adminRegistration(adminRegistrationRequestDto)
+        )
+        return ResponseEntity(response, HttpStatus.OK)
 
     }
 
     @GetMapping
     @RequestMapping("/login")
-    fun memberLogin(@RequestBody memberLoginRequestDto: MemberLoginRequestDto) : ResponseEntity<String>{
-        memberService.memberLogin(memberLoginRequestDto)
-        return ResponseEntity("Login complete", HttpStatus.OK)
+    fun memberLogin(@RequestBody memberLoginRequestDto: MemberLoginRequestDto)
+    : ResponseEntity<Response<String>>{
+        val response = Response(
+            status = HttpStatus.OK,
+            message = null,
+            data = memberService.memberLogin(memberLoginRequestDto)
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 }
