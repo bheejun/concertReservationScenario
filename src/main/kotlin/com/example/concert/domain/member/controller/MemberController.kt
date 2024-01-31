@@ -24,7 +24,7 @@ class MemberController(private val memberService: MemberService) {
     : ResponseEntity<Response<String>>{
 
         val response = Response(
-            status = HttpStatus.OK,
+            status = HttpStatus.OK.value(),
             message = null,
             data = memberService.memberRegistration(memberRegistrationRequestDto)
         )
@@ -37,7 +37,7 @@ class MemberController(private val memberService: MemberService) {
     fun adminRegistration(@Valid @RequestBody adminRegistrationRequestDto: AdminRegistrationRequestDto)
     : ResponseEntity<Response<String>>{
         val response = Response(
-            status = HttpStatus.OK,
+            status = HttpStatus.OK.value(),
             message = null,
             data = memberService.adminRegistration(adminRegistrationRequestDto)
         )
@@ -50,7 +50,7 @@ class MemberController(private val memberService: MemberService) {
     fun memberLogin(@RequestBody memberLoginRequestDto: MemberLoginRequestDto)
     : ResponseEntity<Response<String>>{
         val response = Response(
-            status = HttpStatus.OK,
+            status = HttpStatus.OK.value(),
             message = null,
             data = memberService.memberLogin(memberLoginRequestDto)
         )

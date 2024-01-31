@@ -6,7 +6,7 @@ import com.example.concert.domain.member.dto.request.MemberRegistrationRequestDt
 import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.member.repository.MemberRepository
 import com.example.concert.exception.DoesNotMatchSecretCode
-import com.example.concert.exception.MemberNameAlreadyExistsException
+import com.example.concert.exception.DuplicateException
 import com.example.concert.exception.NotFoundException
 import com.example.concert.util.enum.Role
 import com.example.concert.util.jwt.JwtUtil
@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
@@ -35,7 +34,7 @@ class MemberServiceImpl(
         val encodedPassword = passwordEncoder.encode(memberRegistrationRequestDto.password)
 
         if (memberRepository.existsByMemberName(memberName)) {
-            throw MemberNameAlreadyExistsException("Already used id")
+            throw DuplicateException("Already used id")
         }
 
         memberRepository.save(
