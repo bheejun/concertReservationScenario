@@ -2,79 +2,136 @@ package com.example.concert.domain.concert.service
 
 import com.example.concert.domain.concert.dto.request.ConcertRegistrationRequestDto
 import com.example.concert.domain.concert.dto.response.ConcertResponseDto
-import com.example.concert.domain.concert.dto.response.ConcertSeatInfoResponseDto
 import com.example.concert.domain.concert.model.Concert
 import com.example.concert.domain.concert.repository.ConcertRepository
+import com.example.concert.domain.concert.repository.ScheduleRepository
 import com.example.concert.exception.NotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
-class ConcertServiceImpl(private val concertRepository: ConcertRepository) : ConcertService {
+class ConcertServiceImpl(
+    private val concertRepository: ConcertRepository,
+    private val scheduleRepository: ScheduleRepository,
+    private val scheduleService: ScheduleService
+) : ConcertService {
 
     @Transactional
-    override fun registrationConcert(concertRegistrationRequestDto: ConcertRegistrationRequestDto): String {
-        val stringConcertDateList = concertRegistrationRequestDto.concertDate
-        val dateTimeConcertDateList :MutableList<LocalDateTime> = mutableListOf()
+    override fun registrationConcert(concertRegistrationRequestDto: ConcertRegistrationRequestDto): ConcertResponseDto {
 
-        stringConcertDateList.forEach { stringConcertDate ->
-            dateTimeConcertDateList.add(convertStringToLocalDateTime(stringConcertDate))
+        val concert = Concert(
+            concertName = concertRegistrationRequestDto.concertName,
+            artist = concertRegistrationRequestDto.artist,
+            ticketPrice = concertRegistrationRequestDto.ticketPrice
+        )
+        concertRepository.save(concert)
+
+
+        val scheduleList = scheduleService.makeSchedule(concertRegistrationRequestDto.concertSchedule, concert)
+
+        concert.schedule = scheduleList
+
+        val concertDateList :MutableList<LocalDateTime> = mutableListOf()
+
+
+        scheduleList.forEach { schedule ->
+            concertDateList.add(schedule.concertDate)
         }
 
+        return ConcertResponseDto(
+            concertId = concert.id ?: throw (NotFoundException("Cannot found concert")),
+            concertName = concert.concertName,
+            artist = concert.concertName,
+            ticketPrice = concert.ticketPrice,
+            concertDate = concertDateList
+        )
 
-        val unavailableDate = dateTimeConcertDateList.filter { concertRepository.existsByConcertDate(it) }
-
-
-        if (unavailableDate.isEmpty()) {
-            dateTimeConcertDateList.forEach { concertDate ->
-                concertRepository.save(
-                    Concert(
-                        artist = concertRegistrationRequestDto.artist,
-                        concertName = concertRegistrationRequestDto.concertName,
-                        concertDate = concertDate,
-                        seat = (1..50).map { it.toString() },
-                        ticketPrice = concertRegistrationRequestDto.ticketPrice
-                    )
-                )
-            }
-            return "Concert registration complete"
-        } else {
-            return "$unavailableDate is already booked"
-        }
     }
 
-    override fun getConcertList(): Page<ConcertResponseDto> {
-        val pageable = PageRequest.of(0, 5, Sort.by("concertDate"))
+//    override fun updateConcert(concertId: UUID, concertUpdateRequestDto: ConcertUpdateRequestDto): ConcertUpdateResponseDto {
+//        val originalConcert = concertRepository.findById(concertId).orElseThrow {
+//            throw NotFoundException("The requested resource(concert) cannot found")
+//        }
+//
+//        concertUpdateRequestDto.concertName?.let { originalConcert.concertName = it }
+//        concertUpdateRequestDto.artist?.let { originalConcert.artist = it }
+//        concertUpdateRequestDto.concertDate?.let { originalConcert.concertDate = convertStringToLocalDateTime(it) }
+//        concertUpdateRequestDto.ticketPrice?.let { originalConcert.ticketPrice = it }
+//
+//
+//        concertRepository.save(originalConcert)
+//
+//        return ConcertUpdateResponseDto(
+//            updatedConcertName = originalConcert.concertName,
+//            updatedArtistName = originalConcert.artist,
+//            updatedConcertDate = originalConcert.schedule.concertDate,
+//            updatedConcertPrice = originalConcert.ticketPrice
+//        )
+//
+//    }
 
-        val concertPage :Page<Concert> = concertRepository.findAllByConcertDateGreaterThan(LocalDateTime.now(), pageable )
-
-        return concertPage.map { concert ->
-            ConcertResponseDto(
-                concertName = concert.concertName,
-                concertDate = concert.concertDate,
-                ticketPrice = concert.ticketPrice,
-                artist = concert.artist
-            )
-        }
+    override fun deleteConcert(concertId: UUID): String {
+        concertRepository.deleteById(concertId)
+        return "Delete complete"
     }
 
-    override fun getConcertSeatInfo(concertId: UUID): ConcertSeatInfoResponseDto {
-        val concertSeatInfo = concertRepository.findById(concertId).orElseThrow{
-            throw NotFoundException("Cannot found concert that match with id")
+    @Transactional
+    override fun getConcert(concertId: UUID): ConcertResponseDto {
+        val concert = concertRepository.findById(concertId).orElseThrow {
+            throw NotFoundException("The requested resource(concert) cannot found")
         }
-        return ConcertSeatInfoResponseDto(
-            seatInfo = concertSeatInfo.seat
+
+        val concertSchedule: MutableList<LocalDateTime> = mutableListOf()
+        scheduleRepository.findAllByConcert(concert).forEach { schedule ->
+            concertSchedule.add(schedule.concertDate)
+        }
+
+        return ConcertResponseDto(
+            concertId = concertId,
+            concertName = concert.concertName,
+            artist = concert.artist,
+            concertDate = concertSchedule,
+            ticketPrice = concert.ticketPrice
         )
     }
 
-    private fun convertStringToLocalDateTime(stringDateTime: String) : LocalDateTime{
-        val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        return LocalDateTime.parse(stringDateTime, dateTimeFormatter)
+    @Transactional
+    override fun getConcertListAfterCurrentTIme(pageable: Pageable): Page<ConcertResponseDto> {
+        val currentDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime()
+
+        val paginatedSchedules = scheduleRepository.findAllByConcertDateGreaterThan(currentDateTime, pageable)
+
+        val uniqueConcerts = paginatedSchedules.content
+            .map { schedule -> schedule.concert }
+            .distinct()
+
+        val concertResponseDtoList = uniqueConcerts.map { concert ->
+            val concertDates = concert.schedule
+                ?.filter { schedule -> schedule.concertDate.isAfter(currentDateTime) }
+                ?.map { schedule -> schedule.concertDate }
+                ?.sorted()
+                ?.toMutableList()
+                ?: mutableListOf()
+
+            ConcertResponseDto(
+                concertId = concert.id ?: throw (NotFoundException("Cannot found concert")),
+                concertName = concert.concertName,
+                artist = concert.artist,
+                concertDate = concertDates,
+                ticketPrice = concert.ticketPrice
+            )
+        }
+
+        val pageImpl = PageImpl(concertResponseDtoList, pageable, paginatedSchedules.totalElements)
+        return pageImpl
+
     }
+
 }

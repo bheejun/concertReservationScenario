@@ -1,15 +1,7 @@
 package com.example.concert.domain.concert.model
 
-import com.example.concert.util.StringListToStringConverter
-import jakarta.persistence.Column
-import jakarta.persistence.Convert
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.persistence.Version
+import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
-import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -27,14 +19,11 @@ data class Concert(
     @Column(nullable = false)
     var concertName : String,
 
-    @Convert(converter = StringListToStringConverter::class)
-    var seat : List<String> = mutableListOf(),
-
-    @Column(nullable = false)
-    var concertDate : LocalDateTime,
-
     @Column(nullable = false)
     var ticketPrice : Double,
+
+    @OneToMany(mappedBy = "concert", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var schedule: MutableList<Schedule> ?= null,
 
     @Version
     var version : Long ?= 0
