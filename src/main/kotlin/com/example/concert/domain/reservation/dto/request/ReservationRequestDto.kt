@@ -6,10 +6,8 @@ import jakarta.persistence.Convert
 import java.util.*
 
 data class ReservationRequestDto(
-    val concertId : UUID,
+    val scheduleId : UUID,
 
-    val seat : List<String>
-
-
+    val seatNum : MutableList<Int>
 
 )

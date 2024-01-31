@@ -1,14 +1,11 @@
 package com.example.concert.domain.reservation.model
 
-import com.example.concert.domain.concert.model.Concert
 import com.example.concert.domain.member.model.Member
-import com.example.concert.util.StringListToStringConverter
+import com.example.concert.domain.concert.model.Schedule
+import com.example.concert.domain.concert.model.Seat
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.Date
 import java.util.UUID
 
 @Entity
@@ -25,17 +22,16 @@ data class Reservation(
     var member: Member,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "concert_id")
-    var concert : Concert,
-
-    @Convert(converter = StringListToStringConverter::class)
-    var seat : List<String> = mutableListOf(),
+    @JoinColumn(name = "schedule_id")
+    var schedule: Schedule,
 
     @Column(nullable = false)
-    var totalPrice : Double,
+    var reservationDate : LocalDateTime,
 
+    @OneToMany
+    @JoinColumn(name = "reservation_id")
     @Column(nullable = false)
-    var reservationDate : ZonedDateTime ?= ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+    var seatList: MutableList<Seat> = mutableListOf()
 
 
 
