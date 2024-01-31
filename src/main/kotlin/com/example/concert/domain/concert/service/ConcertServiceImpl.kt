@@ -46,7 +46,7 @@ class ConcertServiceImpl(
         }
 
         return ConcertResponseDto(
-            concertId = concert.id ?: throw (NotFoundException("Cannot found concert")),
+            concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
             concertName = concert.concertName,
             artist = concert.concertName,
             ticketPrice = concert.ticketPrice,
@@ -85,7 +85,7 @@ class ConcertServiceImpl(
     @Transactional
     override fun getConcert(concertId: UUID): ConcertResponseDto {
         val concert = concertRepository.findById(concertId).orElseThrow {
-            throw NotFoundException("The requested resource(concert) cannot found")
+            throw NotFoundException("No Concert was found for the provided id")
         }
 
         val concertSchedule: MutableList<LocalDateTime> = mutableListOf()
@@ -121,7 +121,7 @@ class ConcertServiceImpl(
                 ?: mutableListOf()
 
             ConcertResponseDto(
-                concertId = concert.id ?: throw (NotFoundException("Cannot found concert")),
+                concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
                 concertName = concert.concertName,
                 artist = concert.artist,
                 concertDate = concertDates,

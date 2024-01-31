@@ -56,6 +56,21 @@ class GlobalExceptionHandler {
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
+    @ExceptionHandler(AuthenticationFailureExceptions::class)
+    fun handleDoesAuthenticationFailure(
+        ex: AuthenticationFailureExceptions,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        logger.info("Authentication is failed.")
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            error = "Forbidden",
+            message = ex.message,
+            path = request.servletPath
+        )
+        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+    }
+
 
 }
 

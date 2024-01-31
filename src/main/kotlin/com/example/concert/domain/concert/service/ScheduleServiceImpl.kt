@@ -69,7 +69,7 @@ class ScheduleServiceImpl(
     override fun getAvailableDatesForSpecificConcert(concertId: UUID): GetAvailableDateResponseDto {
 
         val concert= concertRepository.findById(concertId).orElseThrow {
-            NotFoundException ("Cannot found concert")
+            NotFoundException ("No Concert was found for the provided id")
         }
 
         val availableConcertDateList : MutableList<LocalDateTime> = mutableListOf()
@@ -115,7 +115,7 @@ class ScheduleServiceImpl(
                 ?: mutableListOf()
 
             ConcertResponseDto(
-                concertId = concert.id ?: throw (NotFoundException("Cannot found concert")),
+                concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
                 concertName = concert.concertName,
                 artist = concert.artist,
                 concertDate = concertDates,
