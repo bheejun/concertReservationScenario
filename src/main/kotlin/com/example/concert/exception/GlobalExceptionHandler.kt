@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 
@@ -12,12 +11,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 class GlobalExceptionHandler {
     private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
-    @ExceptionHandler(MemberNameAlreadyExistsException::class)
-    fun handleMemberNameAlreadyExistsException(
-        ex: MemberNameAlreadyExistsException,
+    @ExceptionHandler(DuplicateException::class)
+    fun handleDuplicate(
+        ex: DuplicateException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        logger.info("Name duplication occurred")
+        logger.info("Duplication occurred")
         val errorResponse = ErrorResponse(
             status = HttpStatus.CONFLICT.value(),
             error = "Conflict",
@@ -29,7 +28,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException::class)
     fun handleNotFoundException(
-        ex: MemberNameAlreadyExistsException,
+        ex: DuplicateException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
         logger.info("The requested resource cannot found")
@@ -56,6 +55,8 @@ class GlobalExceptionHandler {
         )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
+
+
 }
 
 
