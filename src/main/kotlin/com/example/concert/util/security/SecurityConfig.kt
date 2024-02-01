@@ -1,6 +1,5 @@
 package com.example.concert.util.security
 
-import com.example.concert.util.enum.Role
 import com.example.concert.util.jwt.JwtFilter
 import com.example.concert.util.jwt.JwtUtil
 import org.springframework.context.annotation.Bean
@@ -23,7 +22,7 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers("/member/**","/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
-                    .requestMatchers("/concert/register", "/concert").hasAuthority(Role.ADMIN.toString())
+                    .requestMatchers("/concert/register").hasAuthority("ADMIN")
                     .anyRequest().authenticated()
 
             }
@@ -38,6 +37,8 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
 
         return http.build()!!
     }
+
+
 
 
     @Bean

@@ -87,6 +87,10 @@ class MemberServiceImpl(
 
         val role = checkAdmin(adminCode)
 
+        if(memberRepository.existsByMemberName(adminName)){
+            throw DuplicateException("Already used name")
+        }
+
         memberRepository.save(
             Member(
                 memberName = adminName,

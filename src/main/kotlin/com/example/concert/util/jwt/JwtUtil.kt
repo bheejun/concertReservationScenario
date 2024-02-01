@@ -1,11 +1,14 @@
 package com.example.concert.util.jwt
 import com.example.concert.util.enum.Role
+import com.example.concert.util.security.UserDetailsServiceImpl
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -15,7 +18,8 @@ class JwtUtil(
     @Value("\${secret-key}")
     private val secretKey: String,
     @Value("\${issuer}")
-    private val issuer: String
+    private val issuer: String,
+    private val userDetailsServiceImpl : UserDetailsServiceImpl
 
 ) {
     private val signingKey = Keys.hmacShaKeyFor(secretKey.toByteArray())
@@ -82,6 +86,11 @@ class JwtUtil(
         } catch (e: Exception) {
             return null
         }
+    }
+
+    fun createAuthentication(memberName : String) : Authentication{
+        val userDetails = userDetailsServiceImpl.loadUserByUsername(memberName)
+        return  UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities )
     }
 
 }
