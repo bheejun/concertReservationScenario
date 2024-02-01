@@ -25,9 +25,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
 
+
     implementation ("org.springframework.boot:spring-boot-starter-validation")
 
-    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly ("mysql:mysql-connector-java:8.0.33")
+
+//    runtimeOnly("org.postgresql:postgresql")
 
     implementation ("org.springframework.boot:spring-boot-starter-security")
 
@@ -37,7 +40,6 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-    implementation("com.h2database:h2:2.1.212")
 
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
