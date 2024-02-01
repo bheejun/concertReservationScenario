@@ -39,6 +39,11 @@ class ConcertServiceImpl(
         concert.schedule = scheduleList
 
         val concertDateList :MutableList<LocalDateTime> = mutableListOf()
+        val scheduleIdList : MutableList<UUID> = mutableListOf()
+
+        concert.schedule?.forEach { it->
+            scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
+        }
 
 
         scheduleList.forEach { schedule ->
@@ -50,7 +55,8 @@ class ConcertServiceImpl(
             concertName = concert.concertName,
             artist = concert.concertName,
             ticketPrice = concert.ticketPrice,
-            concertDate = concertDateList
+            concertDate = concertDateList,
+            scheduleId = scheduleIdList
         )
 
     }
@@ -93,12 +99,18 @@ class ConcertServiceImpl(
             concertSchedule.add(schedule.concertDate)
         }
 
+        val scheduleIdList : MutableList<UUID> = mutableListOf()
+        concert.schedule?.forEach {
+            scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
+        }
+
         return ConcertResponseDto(
             concertId = concertId,
             concertName = concert.concertName,
             artist = concert.artist,
             concertDate = concertSchedule,
-            ticketPrice = concert.ticketPrice
+            ticketPrice = concert.ticketPrice,
+            scheduleId = scheduleIdList
         )
     }
 
@@ -120,12 +132,18 @@ class ConcertServiceImpl(
                 ?.toMutableList()
                 ?: mutableListOf()
 
+            val scheduleIdList : MutableList<UUID> = mutableListOf()
+            concert.schedule?.forEach {
+                scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
+            }
+
             ConcertResponseDto(
                 concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
                 concertName = concert.concertName,
                 artist = concert.artist,
                 concertDate = concertDates,
-                ticketPrice = concert.ticketPrice
+                ticketPrice = concert.ticketPrice,
+                scheduleId = scheduleIdList
             )
         }
 

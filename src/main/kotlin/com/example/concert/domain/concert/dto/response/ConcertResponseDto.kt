@@ -8,6 +8,7 @@ data class ConcertResponseDto(
     val concertName : String,
     val artist : String,
     val concertDate : MutableList<LocalDateTime>,
-    val ticketPrice : Double
+    val ticketPrice : Double,
+    val scheduleId : MutableList<UUID>
 
 )
