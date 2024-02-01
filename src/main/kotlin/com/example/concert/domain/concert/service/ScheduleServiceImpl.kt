@@ -59,7 +59,7 @@ class ScheduleServiceImpl(
                 scheduleList.add(schedule)
             }
         }else{
-            throw DuplicateException("Concerts are already scheduled fo ${unAvailableDateList}. Try again accept this days")
+            throw DuplicateException("Concerts are already scheduled for ${unAvailableDateList}. Try again accept this days")
             }
 
         return scheduleList
@@ -114,12 +114,18 @@ class ScheduleServiceImpl(
                 ?.toMutableList()
                 ?: mutableListOf()
 
+            val scheduleIdList : MutableList<UUID> = mutableListOf()
+            concert.schedule?.forEach {
+                scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
+            }
+
             ConcertResponseDto(
                 concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
                 concertName = concert.concertName,
                 artist = concert.artist,
                 concertDate = concertDates,
-                ticketPrice = concert.ticketPrice
+                ticketPrice = concert.ticketPrice,
+                scheduleId = scheduleIdList
             )
         }
 

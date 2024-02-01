@@ -14,7 +14,7 @@ class SeatServiceImpl(private val seatRepository: SeatRepository) : SeatService 
     override fun makeSeat(schedule: Schedule): MutableList<Seat> {
         val seatList: MutableList<Seat> = mutableListOf()
 
-        for (i in 1 until 50) {
+        for (i in 1 until 51) {
             val seat = Seat(
                 seatNum = i,
                 schedule = schedule,

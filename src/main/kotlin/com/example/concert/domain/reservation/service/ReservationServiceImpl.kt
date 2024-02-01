@@ -43,20 +43,17 @@ class ReservationServiceImpl(
         }
 
         val seatStatus = checkSeatHasReservation(seatNumList, schedule)
+        val requestSeatList: MutableList<Seat> = mutableListOf()
 
         if (seatStatus.containsValue(true)) {
             val bookedSeatList = getAlreadyBookedSeatNum(seatStatus)
             throw DuplicateException("The seat numbers $bookedSeatList have already been booked ")
+        } else{
+            seatStatus.keys.forEach { it ->
+                requestSeatList.add(it)
+            }
         }
 
-        val requestSeatList: MutableList<Seat> = mutableListOf()
-
-
-        seatNumList.forEach {
-            val seatList = schedule.seat
-                ?: throw (NotFoundException("There is no seat related to the schedule. Seat number ${it}"))
-            requestSeatList.add(seatList[it])
-        }
 
         val reservation = Reservation(
             member = member,
@@ -77,8 +74,9 @@ class ReservationServiceImpl(
     @Transactional
     override fun getReservationList(memberName: String): MutableList<ReservationResponseDto> {
         val reservationList: MutableList<ReservationResponseDto> = mutableListOf()
+        val member = memberRepository.findByMemberName(memberName).orElseThrow { NotFoundException("No Member was found for the provided memberName") }
 
-        reservationRepository.findAllByMember_MemberName(memberName).forEach { reservation ->
+        reservationRepository.findAllByMember(member).forEach { reservation ->
 
             reservationList.add(reservationToDtoConverter(reservation))
         }
@@ -102,28 +100,34 @@ class ReservationServiceImpl(
     }
 
 
-    private fun checkSeatHasReservation(seatNumList: MutableList<Int>, schedule: Schedule): MutableMap<Int, Boolean> {
+    private fun checkSeatHasReservation(seatNumList: MutableList<Int>, schedule: Schedule): MutableMap<Seat, Boolean> {
         val seat = schedule.seat ?: throw (NotFoundException("There is no seat that is related to the schedule"))
+        val requestSeatSet = seatNumList.toSet()
+        val matchingSeat = seat.filter { it.seatNum in requestSeatSet }
 
-        val seatStatusMap: MutableMap<Int, Boolean> = mutableMapOf()
-        seatNumList.forEach { seatNum ->
-            if (!seat[seatNum].isBooked) {
-                seatStatusMap.put(seatNum, false)
+        matchingSeat.forEach{it->
+            println(it.seatNum)
+        }
+
+        val seatStatusMap: MutableMap<Seat, Boolean> = mutableMapOf()
+        matchingSeat.forEach { it ->
+            if (!it.isBooked) {
+                seatStatusMap.put(it, false)
             } else {
-                seatStatusMap.put(seatNum, true)
+                seatStatusMap.put(it, true)
             }
 
         }
         return seatStatusMap
     }
 
-    private fun getAlreadyBookedSeatNum(seatStatus: MutableMap<Int, Boolean>): MutableList<Int> {
+    private fun getAlreadyBookedSeatNum(seatStatus: MutableMap<Seat, Boolean>): MutableList<Int> {
 
         val bookedSeatList: MutableList<Int> = mutableListOf()
 
         seatStatus.forEach { it ->
             if (seatStatus.getValue(it.key)) {
-                bookedSeatList.add(it.key)
+                bookedSeatList.add(it.key.seatNum)
             }
         }
         return bookedSeatList

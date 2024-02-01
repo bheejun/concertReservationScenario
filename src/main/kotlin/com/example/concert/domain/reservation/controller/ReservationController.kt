@@ -1,6 +1,5 @@
 package com.example.concert.domain.reservation.controller
 
-import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.reservation.dto.request.ReservationRequestDto
 import com.example.concert.domain.reservation.dto.response.ReservationResponseDto
 import com.example.concert.domain.reservation.service.ReservationService
