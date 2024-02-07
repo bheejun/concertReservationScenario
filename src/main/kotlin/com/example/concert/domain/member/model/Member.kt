@@ -28,9 +28,9 @@ data class Member(
     var role : Role,
 
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val reservationList : MutableList<Reservation> = mutableListOf(),
+    val reservationList : MutableList<Reservation> = mutableListOf()
 
-
-    @Version
-    var version: Long ?= null
+//
+//    @Version
+//    var version: Long ?= null
 )

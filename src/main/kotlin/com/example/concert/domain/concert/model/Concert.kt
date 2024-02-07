@@ -8,10 +8,9 @@ import java.util.*
 @Table(name = "concert")
 data class Concert(
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)")
-    var id: UUID? = null,
+    var id: UUID ?= UUID.randomUUID(),
 
     @Column(nullable = false)
     var artist : String,
@@ -20,12 +19,5 @@ data class Concert(
     var concertName : String,
 
     @Column(nullable = false)
-    var ticketPrice : Double,
-
-    @OneToMany(mappedBy = "concert", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var schedule: MutableList<Schedule> ?= null,
-
-    @Version
-    var version : Long ?= 0
-
+    var ticketPrice : Double
 )

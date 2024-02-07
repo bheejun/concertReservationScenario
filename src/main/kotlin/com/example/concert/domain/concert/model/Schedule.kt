@@ -9,10 +9,9 @@ import java.util.*
 @Table(name = "schedule")
 data class Schedule(
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)")
-    var id : UUID? = null,
+    var id: UUID ?= UUID.randomUUID(),
 
     @Column(nullable = false)
     var concertDate : LocalDateTime,
@@ -25,13 +24,7 @@ data class Schedule(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "concert_id")
-    var concert : Concert,
-
-    @OneToMany(mappedBy = "schedule", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var seat : MutableList<Seat> ?= null,
-
-    @Version
-    var version : Long ?= 0
+    var concert : Concert
 
 
 
