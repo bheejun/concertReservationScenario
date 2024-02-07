@@ -30,8 +30,6 @@ dependencies {
 
     runtimeOnly ("mysql:mysql-connector-java:8.0.33")
 
-//    runtimeOnly("org.postgresql:postgresql")
-
     implementation ("org.springframework.boot:spring-boot-starter-security")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
@@ -50,11 +48,21 @@ dependencies {
 
 
 
+    testImplementation("org.testcontainers:testcontainers:1.17.6") // TC 의존성
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:mysql:1.17.6")  // MySQL 컨테이너 사용
+    testImplementation("org.testcontainers:junit-jupiter:1.17.6")
 
+    testImplementation("org.jeasy:easy-random-core:4.0.0")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+
+    testImplementation("org.springframework.security:spring-security-test")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation ("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+
+
+
     testImplementation ("org.mockito.kotlin:mockito-kotlin:3.2.0")
 }
 
@@ -80,3 +88,4 @@ allOpen {
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
 }
+
