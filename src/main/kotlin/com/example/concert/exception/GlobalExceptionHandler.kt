@@ -28,7 +28,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException::class)
     fun handleNotFoundException(
-        ex: DuplicateException,
+        ex: NotFoundException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
         logger.info("The requested resource cannot found")
@@ -56,12 +56,27 @@ class GlobalExceptionHandler {
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
-    @ExceptionHandler(AuthenticationFailureExceptions::class)
+    @ExceptionHandler(AuthenticationFailureException::class)
     fun handleDoesAuthenticationFailure(
-        ex: AuthenticationFailureExceptions,
+        ex: AuthenticationFailureException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
         logger.info("Authentication is failed.")
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            error = "Forbidden",
+            message = ex.message,
+            path = request.servletPath
+        )
+        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+    }
+
+    @ExceptionHandler(AlreadyCanceledReservationException::class)
+    fun handleAlreadyCanceledReservation(
+        ex: AlreadyCanceledReservationException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        logger.info("The Reservation is already canceled.")
         val errorResponse = ErrorResponse(
             status = HttpStatus.FORBIDDEN.value(),
             error = "Forbidden",

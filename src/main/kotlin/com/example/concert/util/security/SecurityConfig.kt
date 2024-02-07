@@ -22,7 +22,7 @@ class SecurityConfig(private val jwtUtil: JwtUtil) {
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers("/member/**","/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
-                    .requestMatchers("/concert/register").hasAuthority("ADMIN")
+                    .requestMatchers("/concert/register", "/concert/delete/**").hasAuthority("ADMIN")
                     .anyRequest().authenticated()
 
             }
