@@ -10,8 +10,8 @@ import com.example.concert.domain.concert.model.Schedule
 import com.example.concert.domain.concert.repository.ScheduleRepository
 import com.example.concert.domain.concert.model.Seat
 import com.example.concert.domain.concert.repository.SeatRepository
-import com.example.concert.exception.AuthenticationFailureExceptions
-import com.example.concert.exception.DuplicateException
+import com.example.concert.exception.AlreadyCanceledReservationException
+import com.example.concert.exception.AuthenticationFailureException
 import com.example.concert.exception.NotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -26,49 +26,43 @@ class ReservationServiceImpl(
     private val seatRepository: SeatRepository,
     private val memberRepository: MemberRepository,
     private val scheduleRepository: ScheduleRepository
-) : ReservationService {
+): ReservationService {
 
     @Transactional
-    override fun makeReservation(reservationRequestDto: ReservationRequestDto, memberName: String)
-            : ReservationResponseDto {
-        val seatNumList = reservationRequestDto.seatNum
-        val scheduleId = reservationRequestDto.scheduleId
+    override fun makeReservation(
+        reservationRequestDto: ReservationRequestDto,
+        memberName: String
+    ): ReservationResponseDto {
 
-        val schedule = scheduleRepository.findById(scheduleId).orElseThrow {
-            throw NotFoundException("No Schedule was found for the provided id")
-        }
+        val requestSeatList = seatRepository.findByIdWithPessimisticLock(reservationRequestDto.seatIdList)
+
+        val schedule = requestSeatList[0].schedule
 
         val member = memberRepository.findByMemberName(memberName).orElseThrow {
             throw NotFoundException("No Member was found for the provided memberName")
         }
 
-        val seatStatus = checkSeatHasReservation(seatNumList, schedule)
-        val requestSeatList: MutableList<Seat> = mutableListOf()
-
-        if (seatStatus.containsValue(true)) {
-            val bookedSeatList = getAlreadyBookedSeatNum(seatStatus)
-            throw DuplicateException("The seat numbers $bookedSeatList have already been booked ")
-        } else{
-            seatStatus.keys.forEach { it ->
-                requestSeatList.add(it)
-            }
-        }
-
-
         val reservation = Reservation(
             member = member,
             schedule = schedule,
-            seatList = requestSeatList,
             reservationDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime()
         )
 
-        reservationRepository.save(reservation)
-
-        countExtraSeatsAndSave(requestSeatList, schedule)
-
+        val savedReservation = reservationRepository.save(reservation)
+        completeReservation(requestSeatList, savedReservation)
         return reservationToDtoConverter(reservation)
+    }
 
-
+    fun completeReservation(
+        requestSeatList: List<Seat>,
+        savedReservation: Reservation
+    ) {
+        for (seat in requestSeatList) {
+            val schedule = seat.schedule
+            seat.booking()
+            seat.reservation = savedReservation
+            schedule.extraSeatCount -= 1
+        }
     }
 
     @Transactional
@@ -77,8 +71,9 @@ class ReservationServiceImpl(
         val member = memberRepository.findByMemberName(memberName).orElseThrow { NotFoundException("No Member was found for the provided memberName") }
 
         reservationRepository.findAllByMember(member).forEach { reservation ->
-
-            reservationList.add(reservationToDtoConverter(reservation))
+            if(!reservation.cancelStatus){
+                reservationList.add(reservationToDtoConverter(reservation))
+            }
         }
 
         return reservationList
@@ -90,52 +85,63 @@ class ReservationServiceImpl(
             .findById(reservationId)
             .orElseThrow { NotFoundException("No Reservation was found for id") }
 
-        if(memberName.equals(reservation.member.memberName)){
+        if(memberName == reservation.member.memberName){
             return reservationToDtoConverter(reservation)
         }else{
-            throw AuthenticationFailureExceptions("The user who booked the concert is different from the currently authorized user.")
+            throw AuthenticationFailureException("The user who booked the concert is different from the currently authorized user.")
         }
 
 
     }
 
+    @Transactional
+    override fun cancelReservation(memberName: String, reservationId: UUID): String {
+        val reservation = reservationRepository.findById(reservationId).orElseThrow {
+            NotFoundException("No Reservation was found for id")
+        }
+        val member = memberRepository.findByMemberName(memberName).orElseThrow {
+            NotFoundException("No Member was found for memberName")}
 
-    private fun checkSeatHasReservation(seatNumList: MutableList<Int>, schedule: Schedule): MutableMap<Seat, Boolean> {
-        val seat = schedule.seat ?: throw (NotFoundException("There is no seat that is related to the schedule"))
-        val requestSeatSet = seatNumList.toSet()
-        val matchingSeat = seat.filter { it.seatNum in requestSeatSet }
-
-        matchingSeat.forEach{it->
-            println(it.seatNum)
+        if(member.memberName != reservation.member.memberName){
+            throw AuthenticationFailureException ("The user who booked the concert is different from the currently authorized user.")
         }
 
-        val seatStatusMap: MutableMap<Seat, Boolean> = mutableMapOf()
-        matchingSeat.forEach { it ->
-            if (!it.isBooked) {
-                seatStatusMap.put(it, false)
-            } else {
-                seatStatusMap.put(it, true)
+        if(!reservation.cancelStatus){
+            reservation.cancelStatus = true
+
+            val reservationSeatList = seatRepository.findAllByReservation(reservation)
+            val updatedSeatList : MutableList<Seat> = mutableListOf()
+
+            reservationSeatList.forEach { seat->
+                seat.reservation = null
+                seat.isBooked = false
+
+                updatedSeatList.add(seatRepository.save(seat))
             }
 
+
+            val schedule = reservation.schedule
+
+            schedule.extraSeatCount += updatedSeatList.size
+
+
+            reservationRepository.save(reservation)
+            scheduleRepository.save(schedule)
+
+            return "Reservation cancel complete"
+        }else{
+            throw AlreadyCanceledReservationException("This reservation was already canceled")
         }
-        return seatStatusMap
     }
 
-    private fun getAlreadyBookedSeatNum(seatStatus: MutableMap<Seat, Boolean>): MutableList<Int> {
 
-        val bookedSeatList: MutableList<Int> = mutableListOf()
 
-        seatStatus.forEach { it ->
-            if (seatStatus.getValue(it.key)) {
-                bookedSeatList.add(it.key.seatNum)
-            }
-        }
-        return bookedSeatList
-    }
+
 
     private fun reservationToDtoConverter(reservation: Reservation): ReservationResponseDto {
         val seatNumList: MutableList<Int> = mutableListOf()
-        reservation.seatList.forEach { it ->
+        val reservationSeatsList = seatRepository.findAllByReservation(reservation)
+        reservationSeatsList.forEach {
             seatNumList.add(it.seatNum)
         }
         val member = reservation.member
@@ -161,19 +167,5 @@ class ReservationServiceImpl(
         )
     }
 
-    private fun countExtraSeatsAndSave(requestSeatList: MutableList<Seat>, schedule: Schedule) {
-
-        requestSeatList.forEach { seat ->
-            seat.isBooked = true
-            seatRepository.save(seat)
-        }
-
-        val seatList = schedule.seat ?: throw (NotFoundException("There are no seat list related to the schedule"))
-
-        schedule.extraSeatCount = seatList.count { seat -> !seat.isBooked }
-
-        scheduleRepository.save(schedule)
-
-    }
 
 }

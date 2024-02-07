@@ -10,4 +10,6 @@ interface ReservationService {
     fun getReservationList(memberName: String) : MutableList<ReservationResponseDto>
 
     fun getReservation(reservationId : UUID, memberName: String) : ReservationResponseDto
+
+    fun cancelReservation(memberName: String, reservationId: UUID) : String
 }

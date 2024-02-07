@@ -1,13 +1,11 @@
 package com.example.concert.domain.reservation.dto.request
 
-import com.example.concert.util.StringListToStringConverter
-import jakarta.persistence.Column
-import jakarta.persistence.Convert
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Pattern
 import java.util.*
 
 data class ReservationRequestDto(
-    val scheduleId : UUID,
-
-    val seatNum : MutableList<Int>
-
+    @field: NotNull(message = "This field cannot be null")
+    val seatIdList : List<UUID>
 )
+

@@ -28,10 +28,14 @@ data class Reservation(
     @Column(nullable = false)
     var reservationDate : LocalDateTime,
 
-    @OneToMany
-    @JoinColumn(name = "reservation_id")
     @Column(nullable = false)
-    var seatList: MutableList<Seat> = mutableListOf()
+    var payStatus : Boolean = false,
+
+    @Column(nullable = false)
+    var cancelStatus : Boolean = false,
+
+    @Version
+    var version : Long ?= 0
 
 
 
