@@ -32,16 +32,18 @@ class ScheduleController (private val scheduleService: ScheduleService){
         return ResponseEntity(response, HttpStatus.OK)
     }
 
-    @GetMapping
-    @RequestMapping("/available-concert-list")
-    fun getAvailableConcertList(@PageableDefault(size = 10, sort = ["concertDate"], direction = Sort.Direction.ASC) pageable: Pageable)
-    :ResponseEntity<Response<Page<ConcertResponseDto>>> {
-        val response = Response(
-            status = HttpStatus.OK.value(),
-            message = "Successfully activated",
-            data = scheduleService.getAvailableConcertList(pageable)
-        )
-        return ResponseEntity(response, HttpStatus.OK)
 
-    }
+
+//    @GetMapping
+//    @RequestMapping("/available-concert-list")
+//    fun getAvailableConcertList(@PageableDefault(size = 10, sort = ["concertDate"], direction = Sort.Direction.ASC) pageable: Pageable)
+//    :ResponseEntity<Response<MutableList<ConcertResponseDto>>> {
+//        val response = Response(
+//            status = HttpStatus.OK.value(),
+//            message = "Successfully activated",
+//            data = scheduleService.getAvailableConcertList(pageable)
+//        )
+//        return ResponseEntity(response, HttpStatus.OK)
+//
+//    }
 }

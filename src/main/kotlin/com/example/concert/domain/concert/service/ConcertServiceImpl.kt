@@ -7,8 +7,6 @@ import com.example.concert.domain.concert.repository.ConcertRepository
 import com.example.concert.domain.concert.repository.ScheduleRepository
 import com.example.concert.exception.NotFoundException
 import jakarta.transaction.Transactional
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -20,7 +18,8 @@ import java.util.*
 class ConcertServiceImpl(
     private val concertRepository: ConcertRepository,
     private val scheduleRepository: ScheduleRepository,
-    private val scheduleService: ScheduleService
+    private val scheduleService: ScheduleService,
+//    private val seatService: SeatService
 ) : ConcertService {
 
     @Transactional
@@ -29,35 +28,14 @@ class ConcertServiceImpl(
         val concert = Concert(
             concertName = concertRegistrationRequestDto.concertName,
             artist = concertRegistrationRequestDto.artist,
-            ticketPrice = concertRegistrationRequestDto.ticketPrice
+            ticketPrice = concertRegistrationRequestDto.ticketPrice,
         )
         concertRepository.save(concert)
 
-
-        val scheduleList = scheduleService.makeSchedule(concertRegistrationRequestDto.concertSchedule, concert)
-
-        concert.schedule = scheduleList
-
-        val concertDateList :MutableList<LocalDateTime> = mutableListOf()
-        val scheduleIdList : MutableList<UUID> = mutableListOf()
-
-        concert.schedule?.forEach { it->
-            scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
-        }
+        scheduleService.makeSchedule(concertRegistrationRequestDto.concertSchedule, concert)
 
 
-        scheduleList.forEach { schedule ->
-            concertDateList.add(schedule.concertDate)
-        }
-
-        return ConcertResponseDto(
-            concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
-            concertName = concert.concertName,
-            artist = concert.concertName,
-            ticketPrice = concert.ticketPrice,
-            concertDate = concertDateList,
-            scheduleId = scheduleIdList
-        )
+        return concertToDtoConverter(concert)
 
     }
 
@@ -93,63 +71,70 @@ class ConcertServiceImpl(
         val concert = concertRepository.findById(concertId).orElseThrow {
             throw NotFoundException("No Concert was found for the provided id")
         }
-
-        val concertSchedule: MutableList<LocalDateTime> = mutableListOf()
-        scheduleRepository.findAllByConcert(concert).forEach { schedule ->
-            concertSchedule.add(schedule.concertDate)
-        }
-
-        val scheduleIdList : MutableList<UUID> = mutableListOf()
-        concert.schedule?.forEach {
-            scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
-        }
-
-        return ConcertResponseDto(
-            concertId = concertId,
-            concertName = concert.concertName,
-            artist = concert.artist,
-            concertDate = concertSchedule,
-            ticketPrice = concert.ticketPrice,
-            scheduleId = scheduleIdList
-        )
+        return concertToDtoConverter(concert)
     }
 
     @Transactional
-    override fun getConcertListAfterCurrentTIme(pageable: Pageable): Page<ConcertResponseDto> {
+    override fun getConcertListAfterCurrentTIme(pageable: Pageable): MutableList<ConcertResponseDto> {
         val currentDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime()
 
-        val paginatedSchedules = scheduleRepository.findAllByConcertDateGreaterThan(currentDateTime, pageable)
+        val scheduleListAfterCurrentTime =
+            scheduleRepository.findAllByConcertDateGreaterThan(currentDateTime, pageable).content
 
-        val uniqueConcerts = paginatedSchedules.content
-            .map { schedule -> schedule.concert }
-            .distinct()
-
-        val concertResponseDtoList = uniqueConcerts.map { concert ->
-            val concertDates = concert.schedule
-                ?.filter { schedule -> schedule.concertDate.isAfter(currentDateTime) }
-                ?.map { schedule -> schedule.concertDate }
-                ?.sorted()
-                ?.toMutableList()
-                ?: mutableListOf()
-
-            val scheduleIdList : MutableList<UUID> = mutableListOf()
-            concert.schedule?.forEach {
-                scheduleIdList.add(it.id ?: throw NotFoundException("No schedule_id was found for the provided Schedule"))
-            }
-
-            ConcertResponseDto(
-                concertId = concert.id ?: throw (NotFoundException("No concert_id was found for the provided Concert")),
-                concertName = concert.concertName,
-                artist = concert.artist,
-                concertDate = concertDates,
-                ticketPrice = concert.ticketPrice,
-                scheduleId = scheduleIdList
-            )
+        if (scheduleListAfterCurrentTime.isEmpty()) {
+            throw NotFoundException("The requested page has no schedule")
         }
 
-        val pageImpl = PageImpl(concertResponseDtoList, pageable, paginatedSchedules.totalElements)
-        return pageImpl
+        val concertIdList: MutableList<UUID> = mutableListOf()
 
+        scheduleListAfterCurrentTime.forEach { schedule ->
+            val concertId =
+                schedule.concert.id ?: throw (NotFoundException("The concertId was not found for provided schedule"))
+            concertIdList.add(concertId)
+        }
+
+        val concertList: MutableList<Concert> = mutableListOf()
+        concertIdList.distinct().forEach {
+            val concert = concertRepository.findById(it).orElseThrow {
+                NotFoundException("The Concert was not found for provided id")
+            }
+            concertList.add(concert)
+        }
+
+        val dtoList :MutableList<ConcertResponseDto> = mutableListOf()
+
+        concertList.forEach {
+            dtoList.add(concertToDtoConverter(it))
+        }
+
+        return dtoList
+
+
+
+
+    }
+    override fun concertToDtoConverter(concert: Concert) : ConcertResponseDto {
+        val concertId = concert.id ?: throw NotFoundException("The scheduleList was Not found for provided concert id")
+        val scheduleList = scheduleRepository.findAllByConcertId(concertId)
+        val dateList : MutableList<LocalDateTime> = mutableListOf()
+        val scheduleIdList :MutableList<UUID> = mutableListOf()
+
+        scheduleList.forEach {
+            dateList.add(it.concertDate)
+            scheduleIdList.add(it.id ?: throw (NotFoundException ("The schedule id was not found for provided schedule")))
+        }
+
+            return ConcertResponseDto(
+                concertId = concertId,
+                concertName = concert.concertName,
+                artist = concert.artist,
+                concertDate = dateList,
+                scheduleIdList = scheduleIdList,
+                ticketPrice = concert.ticketPrice
+            )
     }
 
 }
+
+
+

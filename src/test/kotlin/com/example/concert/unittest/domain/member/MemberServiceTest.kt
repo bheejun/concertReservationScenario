@@ -1,4 +1,4 @@
-package com.example.concert.domain.member
+package com.example.concert.unittest.domain.member
 
 import com.example.concert.domain.member.dto.request.AdminRegistrationRequestDto
 import org.assertj.core.api.Assertions.assertThat

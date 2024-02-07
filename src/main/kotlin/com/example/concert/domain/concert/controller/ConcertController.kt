@@ -51,7 +51,7 @@ class ConcertController(private val concertService: ConcertService) {
     @GetMapping
     @RequestMapping("/list")
     fun getConcertList(@PageableDefault(size = 10, sort = ["concertDate"], direction = Sort.Direction.ASC) pageable: Pageable)
-    :ResponseEntity<Response<Page<ConcertResponseDto>>>{
+    :ResponseEntity<Response<MutableList<ConcertResponseDto>>>{
         val response =Response(
             status = HttpStatus.OK.value(),
             message = "Successfully got the concert list.",

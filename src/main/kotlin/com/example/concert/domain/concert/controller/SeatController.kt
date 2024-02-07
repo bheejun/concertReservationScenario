@@ -17,11 +17,12 @@ class SeatController(private val seatService: SeatService) {
 
     @GetMapping
     @RequestMapping("/{scheduleId}")
-    fun getSeatStatus(@PathVariable scheduleId : UUID) : ResponseEntity<Response<SeatStatusResponseDto>>{
+    fun getSeatStatus(@PathVariable scheduleId : UUID
+    ) : ResponseEntity<Response<MutableList<SeatStatusResponseDto>>>{
         val response =Response(
             status = HttpStatus.OK.value(),
             message = "Successfully got the seat information",
-            data = seatService.getSeatStatus()
+            data = seatService.getSeatsStatus(scheduleId)
         )
 
         return ResponseEntity(response, HttpStatus.OK)

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 class MemberController(private val memberService: MemberService) {
 
     @PostMapping
-    @RequestMapping("/registration")
+    @RequestMapping("/register")
     fun memberRegistration(@Valid @RequestBody memberRegistrationRequestDto: MemberRegistrationRequestDto)
     : ResponseEntity<Response<String>>{
 
@@ -33,7 +33,7 @@ class MemberController(private val memberService: MemberService) {
     }
 
     @PostMapping
-    @RequestMapping("/registration/admin")
+    @RequestMapping("/register/admin")
     fun adminRegistration(@Valid @RequestBody adminRegistrationRequestDto: AdminRegistrationRequestDto)
     : ResponseEntity<Response<String>>{
         val response = Response(
@@ -45,7 +45,7 @@ class MemberController(private val memberService: MemberService) {
 
     }
 
-    @GetMapping
+    @PostMapping
     @RequestMapping("/login")
     fun memberLogin(@RequestBody memberLoginRequestDto: MemberLoginRequestDto)
     : ResponseEntity<Response<String>>{

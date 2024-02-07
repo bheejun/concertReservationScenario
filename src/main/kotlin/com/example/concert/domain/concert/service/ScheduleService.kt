@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable
 import java.util.*
 
 interface ScheduleService {
-    fun makeSchedule(dateList: List<String>, concert : Concert) : MutableList<Schedule>
+    fun makeSchedule(dateList: List<String>, concert : Concert)
 
     fun getAvailableDatesForSpecificConcert(concertId : UUID) : GetAvailableDateResponseDto
 
-    fun getAvailableConcertList(pageable: Pageable) : Page<ConcertResponseDto>
+//    fun getAvailableConcertList(pageable: Pageable) : MutableList<ConcertResponseDto>
 }
