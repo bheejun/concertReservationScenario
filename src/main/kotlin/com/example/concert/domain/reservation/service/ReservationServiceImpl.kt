@@ -1,19 +1,20 @@
 package com.example.concert.domain.reservation.service
 
 import com.example.concert.domain.concert.repository.ConcertRepository
-import com.example.concert.domain.member.repository.MemberRepository
 import com.example.concert.domain.reservation.dto.request.ReservationRequestDto
 import com.example.concert.domain.reservation.dto.response.ReservationResponseDto
 import com.example.concert.domain.reservation.model.Reservation
 import com.example.concert.domain.reservation.repository.ReservationRepository
-import com.example.concert.domain.concert.model.Schedule
 import com.example.concert.domain.concert.repository.ScheduleRepository
 import com.example.concert.domain.concert.model.Seat
 import com.example.concert.domain.concert.repository.SeatRepository
+import com.example.concert.domain.member.model.Member
 import com.example.concert.exception.AlreadyCanceledReservationException
 import com.example.concert.exception.AuthenticationFailureException
 import com.example.concert.exception.NotFoundException
+import com.example.concert.util.event.ReservationCompleteEvent
 import jakarta.transaction.Transactional
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -24,23 +25,20 @@ class ReservationServiceImpl(
     private val concertRepository: ConcertRepository,
     private val reservationRepository: ReservationRepository,
     private val seatRepository: SeatRepository,
-    private val memberRepository: MemberRepository,
-    private val scheduleRepository: ScheduleRepository
-): ReservationService {
+    private val scheduleRepository: ScheduleRepository,
+    private val eventPublisher: ApplicationEventPublisher
+) : ReservationService {
 
     @Transactional
     override fun makeReservation(
         reservationRequestDto: ReservationRequestDto,
-        memberName: String
+        member: Member
     ): ReservationResponseDto {
 
         val requestSeatList = seatRepository.findByIdWithPessimisticLock(reservationRequestDto.seatIdList)
 
         val schedule = requestSeatList[0].schedule
 
-        val member = memberRepository.findByMemberName(memberName).orElseThrow {
-            throw NotFoundException("No Member was found for the provided memberName")
-        }
 
         val reservation = Reservation(
             member = member,
@@ -50,6 +48,15 @@ class ReservationServiceImpl(
 
         val savedReservation = reservationRepository.save(reservation)
         completeReservation(requestSeatList, savedReservation)
+
+        eventPublisher
+            .publishEvent(
+                ReservationCompleteEvent(
+                    this,
+                    member.id ?: throw NotFoundException("The member id was not found for provided member"),
+                    schedule.id ?: throw NotFoundException("The schedule id was not found for provided schedule")
+                )
+            )
         return reservationToDtoConverter(reservation)
     }
 
@@ -66,12 +73,11 @@ class ReservationServiceImpl(
     }
 
     @Transactional
-    override fun getReservationList(memberName: String): MutableList<ReservationResponseDto> {
+    override fun getReservationList(member: Member): MutableList<ReservationResponseDto> {
         val reservationList: MutableList<ReservationResponseDto> = mutableListOf()
-        val member = memberRepository.findByMemberName(memberName).orElseThrow { NotFoundException("No Member was found for the provided memberName") }
 
         reservationRepository.findAllByMember(member).forEach { reservation ->
-            if(!reservation.cancelStatus){
+            if (!reservation.cancelStatus) {
                 reservationList.add(reservationToDtoConverter(reservation))
             }
         }
@@ -85,9 +91,9 @@ class ReservationServiceImpl(
             .findById(reservationId)
             .orElseThrow { NotFoundException("No Reservation was found for id") }
 
-        if(memberName == reservation.member.memberName){
+        if (memberName == reservation.member.memberName) {
             return reservationToDtoConverter(reservation)
-        }else{
+        } else {
             throw AuthenticationFailureException("The user who booked the concert is different from the currently authorized user.")
         }
 
@@ -99,20 +105,18 @@ class ReservationServiceImpl(
         val reservation = reservationRepository.findById(reservationId).orElseThrow {
             NotFoundException("No Reservation was found for id")
         }
-        val member = memberRepository.findByMemberName(memberName).orElseThrow {
-            NotFoundException("No Member was found for memberName")}
 
-        if(member.memberName != reservation.member.memberName){
-            throw AuthenticationFailureException ("The user who booked the concert is different from the currently authorized user.")
+        if (memberName != reservation.member.memberName) {
+            throw AuthenticationFailureException("The user who booked the concert is different from the currently authorized user.")
         }
 
-        if(!reservation.cancelStatus){
+        if (!reservation.cancelStatus) {
             reservation.cancelStatus = true
 
             val reservationSeatList = seatRepository.findAllByReservation(reservation)
-            val updatedSeatList : MutableList<Seat> = mutableListOf()
+            val updatedSeatList: MutableList<Seat> = mutableListOf()
 
-            reservationSeatList.forEach { seat->
+            reservationSeatList.forEach { seat ->
                 seat.reservation = null
                 seat.isBooked = false
 
@@ -129,13 +133,10 @@ class ReservationServiceImpl(
             scheduleRepository.save(schedule)
 
             return "Reservation cancel complete"
-        }else{
+        } else {
             throw AlreadyCanceledReservationException("This reservation was already canceled")
         }
     }
-
-
-
 
 
     private fun reservationToDtoConverter(reservation: Reservation): ReservationResponseDto {
@@ -156,7 +157,8 @@ class ReservationServiceImpl(
 
 
         return ReservationResponseDto(
-            reservationId = reservation.id ?: throw (NotFoundException("No reservation_id was found for the provided Reservation")),
+            reservationId = reservation.id
+                ?: throw (NotFoundException("No reservation_id was found for the provided Reservation")),
             memberName = member.memberName,
             concertName = concert.concertName,
             concertDate = schedule.concertDate,
@@ -166,6 +168,5 @@ class ReservationServiceImpl(
             reservationDate = reservation.reservationDate
         )
     }
-
 
 }
