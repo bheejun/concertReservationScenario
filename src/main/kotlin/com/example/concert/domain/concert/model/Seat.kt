@@ -1,9 +1,8 @@
 package com.example.concert.domain.concert.model
 
-import com.example.concert.domain.concert.model.Schedule
 import com.example.concert.domain.reservation.model.Reservation
+import com.example.concert.exception.AlreadyBookedException
 import jakarta.persistence.*
-import org.hibernate.annotations.GenericGenerator
 import java.util.*
 
 @Entity
@@ -31,7 +30,7 @@ data class Seat(
 ) {
     fun booking() {
         if (this.isBooked) {
-            throw Exception("이미 예약되어있는 좌석입니다.")
+            throw AlreadyBookedException("${this.seatNum} is already booked. Try reserve another seat")
         }
         this.isBooked = true
     }

@@ -86,6 +86,21 @@ class GlobalExceptionHandler {
         return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
     }
 
+    @ExceptionHandler(AlreadyBookedException::class)
+    fun handleAlreadyBookedException(
+        ex: AlreadyBookedException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        logger.info("Already booked.")
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.CONFLICT.value(),
+            error = "Conflict",
+            message = ex.message,
+            path = request.servletPath
+        )
+        return ResponseEntity(errorResponse, HttpStatus.CONFLICT)
+    }
+
 
 }
 
