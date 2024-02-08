@@ -3,8 +3,10 @@ package com.example.concert.util.security
 import com.example.concert.domain.member.model.Member
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.security.Principal
+import javax.security.auth.Subject
 
-class UserDetailsImpl(private val member : Member) : UserDetails {
+class UserDetailsImpl(private val member : Member) : UserDetails, Principal {
 
     fun getMember() : Member{
         return member
@@ -17,6 +19,10 @@ class UserDetailsImpl(private val member : Member) : UserDetails {
 
         return authority
 
+    }
+
+    override fun getName(): String {
+        return member.memberName
     }
 
     override fun getUsername(): String {
@@ -42,6 +48,11 @@ class UserDetailsImpl(private val member : Member) : UserDetails {
     override fun isEnabled(): Boolean {
         return true
     }
+
+    override fun implies(subject: Subject?): Boolean {
+        return super.implies(subject)
+    }
+
 
 
 }
