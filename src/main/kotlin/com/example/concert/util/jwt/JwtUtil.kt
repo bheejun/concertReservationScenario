@@ -1,6 +1,6 @@
 package com.example.concert.util.jwt
 import com.example.concert.util.enum.Role
-import com.example.concert.util.security.UserDetailsServiceImpl
+import com.example.concert.util.security.userdetails.UserDetailsServiceImpl
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -24,16 +24,17 @@ class JwtUtil(
 ) {
     private val signingKey = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
-    fun generateGeneralToken(username: String, role :Role): String {
+    fun generateGeneralToken(memberId:UUID, username: String, role :Role): String {
         val expirationHours = 2
 
         return Jwts.builder()
-            .setSubject(username)
+            .setSubject(memberId.toString())
             .setIssuer(issuer)
             .setIssuedAt(Date())
             .setExpiration(Date(System.currentTimeMillis() + expirationHours * 3600000))
             .signWith(signingKey, SignatureAlgorithm.HS512)
             .claim("role", role.toString())
+            .claim("username", username)
             .compact()
     }
 
@@ -59,8 +60,7 @@ class JwtUtil(
             false
         }
     }
-
-    fun getUsernameFromToken(token: String): String? {
+    fun getMemberIdFromToken(token: String): String? {
         return try {
             val claims = Jwts.parserBuilder()
                 .setSigningKey(signingKey)
@@ -69,7 +69,21 @@ class JwtUtil(
                 .body
             claims.subject
         } catch (e: Exception) {
-            null
+            return null
+        }
+    }
+
+    fun getUsernameFromToken(token: String): String? {
+        return try {
+            val claims = Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .body
+
+            claims["username", String::class.java]
+        } catch (e: Exception) {
+            return null
         }
     }
 
@@ -88,8 +102,8 @@ class JwtUtil(
         }
     }
 
-    fun createAuthentication(memberName : String) : Authentication{
-        val userDetails = userDetailsServiceImpl.loadUserByUsername(memberName)
+    fun createAuthentication(memberId : String) : Authentication{
+        val userDetails = userDetailsServiceImpl.loadUserByUsername(memberId)
         return  UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities )
     }
 

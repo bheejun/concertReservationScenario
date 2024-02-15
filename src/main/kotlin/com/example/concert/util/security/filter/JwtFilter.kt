@@ -1,5 +1,6 @@
-package com.example.concert.util.jwt
+package com.example.concert.util.security.filter
 
+import com.example.concert.util.jwt.JwtUtil
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,9 +18,9 @@ class JwtFilter (private val jwtUtil: JwtUtil) : OncePerRequestFilter(){
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             val jwtToken = bearerToken.substring(7)
             if (jwtUtil.validateToken(jwtToken)) {
-                val username = jwtUtil.getUsernameFromToken(jwtToken) ?: throw NullPointerException("The username is null.")
+                val memberId = jwtUtil.getMemberIdFromToken(jwtToken) ?: throw NullPointerException("The username is null.")
 
-                val authentication = jwtUtil.createAuthentication(username)
+                val authentication = jwtUtil.createAuthentication(memberId)
 
                 SecurityContextHolder.getContext().authentication = authentication
             }

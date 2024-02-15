@@ -1,15 +1,19 @@
-package com.example.concert.util.security
+package com.example.concert.util.security.userdetails
 
 import com.example.concert.domain.member.model.Member
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.security.Principal
+import java.util.UUID
 import javax.security.auth.Subject
 
 class UserDetailsImpl(private val member : Member) : UserDetails, Principal {
 
     fun getMember() : Member{
         return member
+    }
+    fun getMemberId() : UUID{
+        return member.id!!
     }
 
 
@@ -22,7 +26,7 @@ class UserDetailsImpl(private val member : Member) : UserDetails, Principal {
     }
 
     override fun getName(): String {
-        return member.memberName
+        return member.id.toString()
     }
 
     override fun getUsername(): String {
