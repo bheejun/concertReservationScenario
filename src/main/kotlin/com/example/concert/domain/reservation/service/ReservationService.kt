@@ -6,11 +6,12 @@ import com.example.concert.domain.reservation.dto.response.ReservationResponseDt
 import java.util.UUID
 
 interface ReservationService {
-    fun makeReservation(reservationRequestDto: ReservationRequestDto, member: Member): ReservationResponseDto
+    fun makeReservation(reservationRequestDto: ReservationRequestDto, memberId : UUID): ReservationResponseDto
 
     fun getReservationList(member : Member) : MutableList<ReservationResponseDto>
 
-    fun getReservation(reservationId : UUID, memberName : String) : ReservationResponseDto
+    fun getReservation(reservationId : UUID, memberId : UUID) : ReservationResponseDto
 
-    fun cancelReservation(memberName: String, reservationId: UUID) : String
+    fun cancelReservation(memberId : UUID, reservationId: UUID) : String
+
 }

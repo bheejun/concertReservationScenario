@@ -9,12 +9,11 @@ import com.example.concert.domain.concert.repository.ScheduleRepository
 import com.example.concert.domain.concert.model.Seat
 import com.example.concert.domain.concert.repository.SeatRepository
 import com.example.concert.domain.member.model.Member
+import com.example.concert.domain.member.repository.MemberRepository
 import com.example.concert.exception.AlreadyCanceledReservationException
 import com.example.concert.exception.AuthenticationFailureException
 import com.example.concert.exception.NotFoundException
-import com.example.concert.util.event.ReservationCompleteEvent
 import jakarta.transaction.Transactional
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -24,21 +23,23 @@ import java.util.*
 class ReservationServiceImpl(
     private val concertRepository: ConcertRepository,
     private val reservationRepository: ReservationRepository,
+    private val memberRepository: MemberRepository,
     private val seatRepository: SeatRepository,
-    private val scheduleRepository: ScheduleRepository,
-    private val eventPublisher: ApplicationEventPublisher
+    private val scheduleRepository: ScheduleRepository
 ) : ReservationService {
 
     @Transactional
     override fun makeReservation(
         reservationRequestDto: ReservationRequestDto,
-        member: Member
+        memberId : UUID
     ): ReservationResponseDto {
+        val member = memberRepository.findById(memberId).orElseThrow {
+            NotFoundException("The Member was not found for provided memberName")
+        }
 
         val requestSeatList = seatRepository.findByIdWithPessimisticLock(reservationRequestDto.seatIdList)
 
         val schedule = requestSeatList[0].schedule
-
 
         val reservation = Reservation(
             member = member,
@@ -49,14 +50,6 @@ class ReservationServiceImpl(
         val savedReservation = reservationRepository.save(reservation)
         completeReservation(requestSeatList, savedReservation)
 
-        eventPublisher
-            .publishEvent(
-                ReservationCompleteEvent(
-                    this,
-                    member.id ?: throw NotFoundException("The member id was not found for provided member"),
-                    schedule.id ?: throw NotFoundException("The schedule id was not found for provided schedule")
-                )
-            )
         return reservationToDtoConverter(reservation)
     }
 
@@ -86,12 +79,12 @@ class ReservationServiceImpl(
     }
 
     @Transactional
-    override fun getReservation(reservationId: UUID, memberName: String): ReservationResponseDto {
+    override fun getReservation(reservationId: UUID, memberId : UUID): ReservationResponseDto {
         val reservation = reservationRepository
             .findById(reservationId)
             .orElseThrow { NotFoundException("No Reservation was found for id") }
 
-        if (memberName == reservation.member.memberName) {
+        if (memberId == reservation.member.id) {
             return reservationToDtoConverter(reservation)
         } else {
             throw AuthenticationFailureException("The user who booked the concert is different from the currently authorized user.")
@@ -101,12 +94,12 @@ class ReservationServiceImpl(
     }
 
     @Transactional
-    override fun cancelReservation(memberName: String, reservationId: UUID): String {
+    override fun cancelReservation(memberId : UUID, reservationId: UUID): String {
         val reservation = reservationRepository.findById(reservationId).orElseThrow {
             NotFoundException("No Reservation was found for id")
         }
 
-        if (memberName != reservation.member.memberName) {
+        if (memberId != reservation.member.id) {
             throw AuthenticationFailureException("The user who booked the concert is different from the currently authorized user.")
         }
 
