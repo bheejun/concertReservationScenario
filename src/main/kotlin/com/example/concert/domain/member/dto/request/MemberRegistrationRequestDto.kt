@@ -4,8 +4,7 @@ import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 data class MemberRegistrationRequestDto(
-
-    @field:Pattern(regexp = "^[a-z0-9]{4,10}$", message = "Invalid username")
+    @field:Pattern(regexp = "^[a-z0-9]{4,20}$", message = "Invalid username")
     val memberName: String,
 
 

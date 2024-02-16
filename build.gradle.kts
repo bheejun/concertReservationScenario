@@ -39,13 +39,16 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
 
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    implementation("org.redisson:redisson-spring-boot-starter:3.26.1")
 
     implementation("io.springfox:springfox-swagger-ui:3.0.0")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
 
     implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0-RC2")
 
 
     testImplementation("org.testcontainers:testcontainers:1.17.6") // TC 의존성

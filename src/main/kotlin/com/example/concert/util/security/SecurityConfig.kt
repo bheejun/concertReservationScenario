@@ -1,6 +1,6 @@
 package com.example.concert.util.security
 
-import com.example.concert.util.jwt.JwtFilter
+import com.example.concert.util.security.filter.JwtFilter
 import com.example.concert.util.jwt.JwtUtil
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

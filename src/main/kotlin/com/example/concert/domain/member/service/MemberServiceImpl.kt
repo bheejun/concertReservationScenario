@@ -46,7 +46,7 @@ class MemberServiceImpl(
             )
         )
         println("${memberName}, ${memberRegistrationRequestDto.password} ,${encodedPassword}")
-        return "Welcome ${memberName}"
+        return "Welcome $memberName"
 
 
 
@@ -71,7 +71,7 @@ class MemberServiceImpl(
             throw NotFoundException("Id or password is wrong. Try again")
         }
 
-        val generalToken = jwtUtil.generateGeneralToken(memberName, requestMember.role)
+        val generalToken = jwtUtil.generateGeneralToken(requestMember.id!!, memberName, requestMember.role)
 
         response.addHeader("Authorization", "Bearer $generalToken")
 

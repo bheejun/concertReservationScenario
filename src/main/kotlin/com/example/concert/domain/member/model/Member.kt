@@ -1,6 +1,5 @@
 package com.example.concert.domain.member.model
 
-import com.example.concert.domain.reservation.model.Reservation
 import com.example.concert.util.enum.Role
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
@@ -25,12 +24,6 @@ data class Member(
     var point: Double,
 
     @Enumerated(EnumType.STRING)
-    var role : Role,
+    var role : Role
 
-    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val reservationList : MutableList<Reservation> = mutableListOf()
-
-//
-//    @Version
-//    var version: Long ?= null
 )
