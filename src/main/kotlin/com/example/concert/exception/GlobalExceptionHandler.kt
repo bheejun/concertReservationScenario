@@ -57,7 +57,7 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationFailureException::class)
-    fun handleDoesAuthenticationFailure(
+    fun handleAuthenticationFailure(
         ex: AuthenticationFailureException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
