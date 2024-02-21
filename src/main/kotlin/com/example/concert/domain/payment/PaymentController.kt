@@ -65,7 +65,6 @@ class PaymentController(
 
         }catch (e: RuntimeException){
             paymentService.refundForExpiredReservation(apiKey, secretKey, reservationId)
-
             throw e
         }
 
