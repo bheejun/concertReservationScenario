@@ -4,7 +4,6 @@ steps:
     args: ['build', '-t',
            'asia-east1-docker.pkg.dev/cicd-415000/concert-ar',
            '.']
-
   # Docker Push
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push',
