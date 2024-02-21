@@ -1,6 +1,11 @@
 steps:
-  - name: 'gcr.io/cloud-builders/gradle'
-    args: ['build']
-#  - name: 'gcr.io/cloud-builders/docker'
-#    args: ['build', '--tag=gcr.io/cicd-415000/spring-boot', '.']
-#    images: ['gcr.io/cicd-415000/spring-boot']
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t',
+           'asia-northeast3-docker.pkg.dev/cicd-415000/my-docker-repo/myimage',
+           '.']
+
+  # Docker Push
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push',
+           'us-central1-docker.pkg.dev/cicd-415000/my-docker-repo/myimage']
