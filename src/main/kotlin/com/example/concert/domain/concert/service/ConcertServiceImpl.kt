@@ -18,8 +18,7 @@ import java.util.*
 class ConcertServiceImpl(
     private val concertRepository: ConcertRepository,
     private val scheduleRepository: ScheduleRepository,
-    private val scheduleService: ScheduleService,
-//    private val seatService: SeatService
+    private val scheduleService: ScheduleService
 ) : ConcertService {
 
     @Transactional

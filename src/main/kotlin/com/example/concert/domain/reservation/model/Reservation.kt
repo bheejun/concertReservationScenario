@@ -2,7 +2,6 @@ package com.example.concert.domain.reservation.model
 
 import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.concert.model.Schedule
-import com.example.concert.domain.concert.model.Seat
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDateTime

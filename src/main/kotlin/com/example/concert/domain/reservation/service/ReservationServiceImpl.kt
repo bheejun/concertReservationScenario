@@ -15,11 +15,6 @@ import com.example.concert.exception.AlreadyCanceledReservationException
 import com.example.concert.exception.AuthenticationFailureException
 import com.example.concert.exception.NotFoundException
 import jakarta.transaction.Transactional
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -34,7 +29,6 @@ class ReservationServiceImpl(
     private val scheduleRepository: ScheduleRepository,
     private val queueWithRedisService: QueueWithRedisService
 ) : ReservationService {
-    private val logger = LoggerFactory.getLogger(ReservationServiceImpl::class.java)
 
     @Transactional
     override fun makeReservation(

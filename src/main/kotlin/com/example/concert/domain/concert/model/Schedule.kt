@@ -1,7 +1,6 @@
 package com.example.concert.domain.concert.model
 
 import jakarta.persistence.*
-import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDateTime
 import java.util.*
 

@@ -12,7 +12,6 @@ import org.springframework.web.servlet.HandlerMapping
 class GetSeatStatusInterceptor(
     private val queueWithRedisService: QueueWithRedisService
 ) : HandlerInterceptor {
-    private val logger = LoggerFactory.getLogger(GetSeatStatusInterceptor::class.java)
 
     override fun preHandle(
         request: HttpServletRequest, response: HttpServletResponse, handler: Any

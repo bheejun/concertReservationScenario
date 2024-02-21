@@ -4,7 +4,6 @@ import com.example.concert.domain.concert.dto.request.ConcertRegistrationRequest
 import com.example.concert.domain.concert.dto.response.ConcertResponseDto
 import com.example.concert.domain.concert.service.ConcertService
 import com.example.concert.util.response.Response
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
