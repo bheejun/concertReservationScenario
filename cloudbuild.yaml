@@ -9,3 +9,8 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push',
            'asia-northeast3-docker.pkg.dev/cicd-415000/concert-ar']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
