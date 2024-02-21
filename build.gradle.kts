@@ -106,7 +106,7 @@ docker {
     springBootApplication {
         baseImage.set("openjdk:17-jdk-slim")
         ports.set(listOf(8080, 8080))
-        images.set(setOf("awesome-spring-boot:1.115", "awesome-spring-boot:latest"))
+        images.set(setOf("concert-application:0.0.0", "concert-application:latest"))
         jvmArgs.set(listOf("-Dspring.profiles.active=production", "-Xmx2048m"))
     }
 }
