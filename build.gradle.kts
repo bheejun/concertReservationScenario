@@ -1,12 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.bmuschko.gradle.docker.tasks.image.*
+
+
 
 plugins {
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.spring") version "1.9.22"
-    kotlin("plugin.noarg") version "1.8.22"
+    kotlin("plugin.noarg") version "1.9.22"
+    id("com.bmuschko.docker-spring-boot-application") version "9.4.0"
 }
+
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
@@ -97,3 +102,11 @@ allOpen {
     annotation("jakarta.persistence.Embeddable")
 }
 
+docker {
+    springBootApplication {
+        baseImage.set("openjdk:17-jdk-slim")
+        ports.set(listOf(8080, 8080))
+        images.set(setOf("awesome-spring-boot:1.115", "awesome-spring-boot:latest"))
+        jvmArgs.set(listOf("-Dspring.profiles.active=production", "-Xmx2048m"))
+    }
+}
