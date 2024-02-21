@@ -40,6 +40,7 @@ CREATE TABLE reservation (
                              reservation_date TIMESTAMP NOT NULL,
                              pay_status BOOLEAN NOT NULL,
                              cancel_status BOOLEAN NOT NULL,
+                             total_price DOUBLE NOT NULL,
                              version BIGINT,
                              PRIMARY KEY (id),
                              FOREIGN KEY (member_id) REFERENCES member(id),
