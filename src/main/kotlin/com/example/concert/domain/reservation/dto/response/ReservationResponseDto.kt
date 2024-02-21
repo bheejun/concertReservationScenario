@@ -11,5 +11,7 @@ data class ReservationResponseDto(
     val ticketNum : Int,
     val seatNum : MutableList<Int>,
     val totalPrice : Double,
+    val paymentStatus : Boolean,
+    val expiredStatus : Boolean,
     val reservationDate : LocalDateTime
 )

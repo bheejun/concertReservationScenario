@@ -101,6 +101,37 @@ class GlobalExceptionHandler {
         return ResponseEntity(errorResponse, HttpStatus.CONFLICT)
     }
 
+    @ExceptionHandler(DoesNotMatchAmountException::class)
+    fun doesNotMatchAmountExceptionHandler(
+        ex: DoesNotMatchAmountException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        logger.info("Amount for provided payment does not match with reservation's total price")
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            error = "Forbidden",
+            message = ex.message,
+            path = request.servletPath
+        )
+        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+    }
+
+    @ExceptionHandler(PaymentTimeExceededException::class)
+    fun paymentTimeExceededException(
+        ex: PaymentTimeExceededException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        logger.info("This Reservation is expired")
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            error = "Forbidden",
+            message = ex.message,
+            path = request.servletPath
+        )
+        return ResponseEntity(errorResponse, HttpStatus.FORBIDDEN)
+    }
+
+
 
 }
 

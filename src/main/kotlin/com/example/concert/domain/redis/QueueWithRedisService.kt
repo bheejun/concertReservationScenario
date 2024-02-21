@@ -1,13 +1,18 @@
-package com.example.concert.util.redis
+package com.example.concert.domain.redis
 
 import com.example.concert.exception.AuthenticationFailureException
 import com.example.concert.exception.NotFoundException
+import com.example.concert.util.security.SecurityCoroutineContext
 import kotlinx.coroutines.*
 import org.redisson.api.RedissonClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @Service
 class QueueWithRedisService(
@@ -20,7 +25,7 @@ class QueueWithRedisService(
     fun addQueueFilter(scheduleId: String, memberId: String) {
         val lock = redissonClient.getLock(scheduleId)
         try {
-            val available = lock.tryLock(10, 1, TimeUnit.SECONDS)
+            val available = lock.tryLock(3, 2, TimeUnit.SECONDS)
 
             if (!available) {
                 throw NotFoundException("Cannot found Lock")
@@ -56,37 +61,32 @@ class QueueWithRedisService(
     }
 
     private fun addSecondIndex(scheduleId: String, memberId: String) {
-        val bucket = redissonClient.getBucket<Any>(memberId)
-        bucket.set(prefixWorkingQueue + scheduleId, Duration.ofSeconds(10L))
+        val key = "jun:$scheduleId:$memberId"
+        redissonClient.getBucket<String>(key).set(System.currentTimeMillis().toString(), Duration.ofSeconds(20L))
     }
 
     fun getWaitingQueueNum(scheduleId: String, memberId: String): Long {
         val waitingQueue = redissonClient.getScoredSortedSet<String>(prefixWaitingQueue + scheduleId)
-        val num : Long = try {
+        val num: Long = try {
             waitingQueue.rank(memberId).toLong()
-        }catch (e: Exception){
+        } catch (e: Exception) {
             -1L
         }
         return num
     }
 
-    fun leaveWaitingQueue(scheduleId: String, memberId: String) {
-        val waitingQueue = redissonClient.getScoredSortedSet<String>(prefixWaitingQueue + scheduleId)
-        waitingQueue.remove(memberId)
-    }
-
     fun leaveWorkingQueue(scheduleId: String, memberId: String) {
         val workingQueue = redissonClient.getSet<String>(prefixWorkingQueue + scheduleId)
+        logger.warn("WQ ${workingQueue}")
         workingQueue.remove(memberId)
 
-        val bucket = redissonClient.getBucket<Any>(memberId)
+        val bucket = redissonClient.getBucket<String>("jun:$scheduleId:$memberId")
         bucket.delete()
     }
-
     fun processQueue(scheduleId: String) {
         val lock = redissonClient.getLock(scheduleId)
         try {
-            val available = lock.tryLock(10, 1, TimeUnit.SECONDS)
+            val available = lock.tryLock(3, 2, TimeUnit.SECONDS)
 
             if (!available) {
                 throw NotFoundException("Cannot found Lock")
@@ -95,9 +95,10 @@ class QueueWithRedisService(
             val workingQueue = redissonClient.getSet<String>(prefixWorkingQueue + scheduleId)
             val currentWorkingQueueSize = workingQueue.size.toLong()
 
-            if (currentWorkingQueueSize <= 10) {
+            if (currentWorkingQueueSize < 10) {
                 val availableSlots = 10 - currentWorkingQueueSize
-                if(availableSlots>0){
+                logger.warn("available : ${availableSlots}")
+                if (availableSlots > 0) {
                     moveFromWaitingToWorkingQueue(scheduleId, availableSlots)
                 }
             }
@@ -110,15 +111,15 @@ class QueueWithRedisService(
 
 
     }
-
     private fun moveFromWaitingToWorkingQueue(scheduleId: String, availableSlots: Long) {
         val waitingQueue = redissonClient.getScoredSortedSet<String>(prefixWaitingQueue + scheduleId)
-        val membersInWaitingQueue = waitingQueue.pollFirst(availableSlots.toInt())
 
-        membersInWaitingQueue.forEach { memberId ->
+        val memberList = waitingQueue.pollFirst(availableSlots.toInt())
+        memberList.forEach{ memberId ->
             addWorkingQueue(scheduleId, memberId)
-            leaveWaitingQueue(scheduleId, memberId)
         }
+
+
     }
 
     fun isAlreadyInWorkingQueue(scheduleId: String, memberId: String): Boolean {
@@ -129,34 +130,34 @@ class QueueWithRedisService(
     fun startCheck(scheduleId: String, memberId: String) {
         CoroutineScope(Dispatchers.Default).launch {
             while (true) {
-                try {
-                    if (!expireStatus(scheduleId, memberId)) {
-                        delay(1000)
-                    } else {
-                        break
-                    }
-                } catch (e: AuthenticationFailureException) {
-                    throw e
+                if (expireStatus(scheduleId, memberId)) {
+                    logger.warn("퇴장${memberId}")
+                    break
                 }
+                delay(1000L)
             }
         }
     }
 
     fun expireStatus(scheduleId: String, memberId: String): Boolean {
-        val bucket = redissonClient.getBucket<Any>(memberId)
-        val value = bucket.get()
+
+        val secondIndex = redissonClient.getBucket<String>(memberId)
+        val value = secondIndex.get()
+        logger.warn(value)
 
         if (value == null) {
             if (isAlreadyInWorkingQueue(scheduleId, memberId)) {
-                logger.info("in workingQueue and expired")
+                logger.warn("in workingQueue and expired")
                 leaveWorkingQueue(scheduleId, memberId)
                 processQueue(scheduleId)
                 return true
             } else {
-                logger.info("not in workingQueue and expired")
+                logger.warn("not in workingQueue and expired. 예약완료 혹은 예외")
+                leaveWorkingQueue(scheduleId, memberId)
+                processQueue(scheduleId)
                 return true
             }
-        }else{
+        } else {
             if (isAlreadyInWorkingQueue(scheduleId, memberId)) {
                 logger.info("in workingQueue and not expired")
                 return false
@@ -165,6 +166,43 @@ class QueueWithRedisService(
                 return false
             }
         }
+
+
     }
+
+   suspend fun checkNumUntilInWorkingQueue(scheduleId: String, memberId: String) {
+       withContext(Dispatchers.IO + SecurityCoroutineContext()) {
+           while (!isAlreadyInWorkingQueue(scheduleId.toString(), memberId.toString())) {
+               delay(1000L)
+//                val seatCount = scheduleRepository.findById(scheduleId)
+//                    .orElseThrow { NotFoundException("The Schedule not found for provided id") }.extraSeatCount
+//                if (seatCount == 0) {
+//
+//                }
+               if (getWaitingQueueNum(scheduleId.toString(), memberId.toString()) == -1L) {
+                   break
+
+               }
+           }
+           delay(1000L)
+       }
+    }
+
+
+    fun createPaymentToken(reservationId: String) {
+        val bucket = redissonClient.getBucket<Any>(reservationId)
+        bucket.set(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toString(), Duration.ofSeconds(300L))
+    }
+
+    fun checkPaymentTokenExist(reservationId: String): Boolean {
+        val bucket = redissonClient.getBucket<Any>(reservationId)
+        if (bucket.get() == null) {
+            return false
+        } else {
+            return true
+        }
+
+    }
+
 
 }

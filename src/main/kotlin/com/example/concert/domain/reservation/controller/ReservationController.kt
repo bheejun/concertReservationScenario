@@ -1,5 +1,6 @@
 package com.example.concert.domain.reservation.controller
 
+import com.example.concert.domain.redis.QueueWithRedisService
 import com.example.concert.domain.reservation.dto.request.ReservationRequestDto
 import com.example.concert.domain.reservation.dto.response.ReservationResponseDto
 import com.example.concert.domain.reservation.service.ReservationService
@@ -19,14 +20,16 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/reservation")
-class ReservationController(private val reservationService: ReservationService) {
+class ReservationController(
+    private val reservationService: ReservationService,
+    private val queueWithRedisService: QueueWithRedisService
+) {
 
-    @PostMapping
-    @RequestMapping("/register/{scheduleId}")
+    @PostMapping("/register/{scheduleId}")
     fun reservationRegistration(
         @AuthenticationPrincipal memberDetails: UserDetailsImpl,
         @Valid @RequestBody reservationRequestDto: ReservationRequestDto,
-        @PathVariable scheduleId : UUID
+        @PathVariable scheduleId: UUID
     ): ResponseEntity<Response<ReservationResponseDto>> {
         val response = Response(
             status = HttpStatus.OK.value(),
@@ -36,9 +39,9 @@ class ReservationController(private val reservationService: ReservationService) 
         return ResponseEntity(response, HttpStatus.OK)
     }
 
-    @GetMapping
-    @RequestMapping("/list")
-    fun getReservationList(@AuthenticationPrincipal memberDetails: UserDetailsImpl
+    @GetMapping("/list")
+    fun getReservationList(
+        @AuthenticationPrincipal memberDetails: UserDetailsImpl
     ): ResponseEntity<Response<MutableList<ReservationResponseDto>>> {
         val response = Response(
             status = HttpStatus.OK.value(),
@@ -48,8 +51,20 @@ class ReservationController(private val reservationService: ReservationService) 
         return ResponseEntity(response, HttpStatus.OK)
     }
 
-    @PostMapping
-    @RequestMapping("/cancel/{reservationId}")
+    @GetMapping("/{reservationId}")
+    fun getReservation(
+        @AuthenticationPrincipal memberDetails: UserDetailsImpl,
+        reservationId: UUID
+    ): ResponseEntity<Response<ReservationResponseDto>> {
+        val response = Response(
+            status = HttpStatus.OK.value(),
+            message = "Successfully got the reservation list.",
+            data = reservationService.getReservation(reservationId, memberDetails.getMember().id!!)
+        )
+        return ResponseEntity(response, HttpStatus.OK)
+    }
+
+    @PostMapping("/cancel/{reservationId}")
     fun cancelReservation(
         @AuthenticationPrincipal memberDetails: UserDetailsImpl,
         @PathVariable reservationId: UUID
@@ -61,6 +76,11 @@ class ReservationController(private val reservationService: ReservationService) 
             data = reservationService.cancelReservation(memberId, reservationId)
         )
         return ResponseEntity(response, HttpStatus.OK)
+    }
+
+    @GetMapping("/check/{reservationId}")
+    fun checkPaymentStatus(@PathVariable reservationId: String): ResponseEntity<Boolean> {
+        return ResponseEntity(queueWithRedisService.checkPaymentTokenExist(reservationId), HttpStatus.OK)
     }
 
 }

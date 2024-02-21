@@ -1,8 +1,10 @@
 package com.example.concert.domain.concert.controller
 
 import com.example.concert.domain.concert.dto.response.SeatStatusResponseDto
+import com.example.concert.domain.concert.repository.ScheduleRepository
 import com.example.concert.domain.concert.service.SeatService
-import com.example.concert.util.redis.QueueWithRedisService
+import com.example.concert.domain.redis.QueueWithRedisService
+import com.example.concert.exception.NotFoundException
 import com.example.concert.util.response.Response
 import com.example.concert.util.security.SecurityCoroutineContext
 import com.example.concert.util.security.userdetails.UserDetailsImpl
@@ -20,7 +22,8 @@ import java.util.UUID
 @RequestMapping("/concert/seat")
 class SeatController(
     private val seatService: SeatService,
-    private val queueWithRedisService: QueueWithRedisService
+    private val queueWithRedisService: QueueWithRedisService,
+    private val scheduleRepository: ScheduleRepository
 ) {
 
     @GetMapping
@@ -57,14 +60,13 @@ class SeatController(
         withContext(Dispatchers.IO + SecurityCoroutineContext()) {
             while (!queueWithRedisService.isAlreadyInWorkingQueue(scheduleId.toString(), memberId.toString())) {
                 delay(1000L)
-//                val seatCount = scheduleRepository.findById(scheduleId)
-//                    .orElseThrow { NotFoundException("The Schedule not found for provided id") }.extraSeatCount
-//                if (seatCount == 0) {
-//
-//                }
+                val seatCount = scheduleRepository.findById(scheduleId)
+                    .orElseThrow { NotFoundException("The Schedule not found for provided id") }.extraSeatCount
+                if (seatCount == 0) {
+                    break
+                }
                 if (queueWithRedisService.getWaitingQueueNum(scheduleId.toString(), memberId.toString()) == -1L) {
                     break
-
                 }
             }
             delay(1000L)

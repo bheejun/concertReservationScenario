@@ -34,9 +34,13 @@ data class Reservation(
     @Column(nullable = false)
     var cancelStatus : Boolean = false,
 
-    @Version
-    var version : Long ?= 0
-
-
-
-)
+    @Column(nullable = false)
+    var totalPrice : Double
+){
+    fun changePaymentStatus(){
+        this.payStatus = true
+    }
+    fun changeCancelStatus(){
+        this.cancelStatus = true
+    }
+}

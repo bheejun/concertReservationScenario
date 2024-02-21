@@ -10,10 +10,16 @@ import com.example.concert.domain.concert.model.Seat
 import com.example.concert.domain.concert.repository.SeatRepository
 import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.member.repository.MemberRepository
+import com.example.concert.domain.redis.QueueWithRedisService
 import com.example.concert.exception.AlreadyCanceledReservationException
 import com.example.concert.exception.AuthenticationFailureException
 import com.example.concert.exception.NotFoundException
 import jakarta.transaction.Transactional
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -25,8 +31,10 @@ class ReservationServiceImpl(
     private val reservationRepository: ReservationRepository,
     private val memberRepository: MemberRepository,
     private val seatRepository: SeatRepository,
-    private val scheduleRepository: ScheduleRepository
+    private val scheduleRepository: ScheduleRepository,
+    private val queueWithRedisService: QueueWithRedisService
 ) : ReservationService {
+    private val logger = LoggerFactory.getLogger(ReservationServiceImpl::class.java)
 
     @Transactional
     override fun makeReservation(
@@ -41,14 +49,23 @@ class ReservationServiceImpl(
 
         val schedule = requestSeatList[0].schedule
 
+        val concert = concertRepository
+            .findById(
+                schedule.concert.id ?: throw NotFoundException("There is no concert that is related to the schedule")
+            )
+            .orElseThrow { throw NotFoundException("No Concert was found for the provided id") }
+
+
         val reservation = Reservation(
             member = member,
             schedule = schedule,
+            totalPrice = requestSeatList.size*concert.ticketPrice,
             reservationDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime()
         )
 
         val savedReservation = reservationRepository.save(reservation)
         completeReservation(requestSeatList, savedReservation)
+        queueWithRedisService.createPaymentToken(reservation.id.toString())
 
         return reservationToDtoConverter(reservation)
     }
@@ -71,7 +88,12 @@ class ReservationServiceImpl(
 
         reservationRepository.findAllByMember(member).forEach { reservation ->
             if (!reservation.cancelStatus) {
-                reservationList.add(reservationToDtoConverter(reservation))
+                if(queueWithRedisService.checkPaymentTokenExist(reservation.id!!.toString())){
+                    reservationList.add(reservationToDtoConverter(reservation))
+                }else{
+                    cancelReservation(reservation.member.id!!, reservation.id!!)
+                }
+
             }
         }
 
@@ -142,24 +164,22 @@ class ReservationServiceImpl(
 
         val schedule = reservation.schedule
 
-        val concert = concertRepository
-            .findById(
-                schedule.concert.id ?: throw NotFoundException("There is no concert that is related to the schedule")
-            )
-            .orElseThrow { throw NotFoundException("No Concert was found for the provided id") }
-
-
         return ReservationResponseDto(
             reservationId = reservation.id
                 ?: throw (NotFoundException("No reservation_id was found for the provided Reservation")),
             memberName = member.memberName,
-            concertName = concert.concertName,
+            concertName = schedule.concert.concertName,
             concertDate = schedule.concertDate,
             ticketNum = seatNumList.size,
             seatNum = seatNumList,
-            totalPrice = concert.ticketPrice * seatNumList.size,
+            totalPrice = reservation.totalPrice,
+            paymentStatus = reservation.payStatus,
+            expiredStatus = !queueWithRedisService.checkPaymentTokenExist(reservation.id.toString()),
             reservationDate = reservation.reservationDate
         )
     }
+
+
+
 
 }
