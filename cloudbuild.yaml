@@ -1,14 +1,11 @@
 steps:
   # Docker Build
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t',
-           'asia-east1-docker.pkg.dev/cicd-415000/concert-ar',
-           '.']
+    args: ['build', '-t', 'asia-east1-docker.pkg.dev/cicd-415000/concert-ar/concert-application:0.0.0', '.']
   # Docker Push
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push',
-           'asia-east1-docker.pkg.dev/cicd-415000/concert-ar']
+    args: ['push', 'asia-east1-docker.pkg.dev/cicd-415000/concert-ar/concert-application:0.0.0']
+
 options:
   logging: CLOUD_LOGGING_ONLY
-
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
