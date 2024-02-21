@@ -1,4 +1,6 @@
 steps:
+  - name: 'gcr.io/cloud-builders/mvn' # or 'gcr.io/cloud-builders/gradle' for Gradle projects
+    args: [ 'package' ]
   # Docker Build
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t',
