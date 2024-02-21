@@ -17,6 +17,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -41,6 +42,7 @@ dependencies {
 
 
     implementation("org.redisson:redisson-spring-boot-starter:3.26.1")
+    implementation("io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64")
 
     implementation("io.springfox:springfox-swagger-ui:3.0.0")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
@@ -49,6 +51,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0-RC2")
+
+    implementation ("com.github.iamport:iamport-rest-client-java:0.2.21")
+
 
 
     testImplementation("org.testcontainers:testcontainers:1.17.6") // TC 의존성
