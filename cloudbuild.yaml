@@ -8,4 +8,4 @@ steps:
   # Docker Push
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push',
-           'us-central1-docker.pkg.dev/cicd-415000/my-docker-repo/concertimage']
+           'asia-northeast3-docker.pkg.dev/cicd-415000/my-docker-repo/concertimage']
