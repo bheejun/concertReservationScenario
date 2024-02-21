@@ -107,6 +107,6 @@ docker {
         baseImage.set("openjdk:17-jdk-slim")
         ports.set(listOf(8080, 8080))
         images.set(setOf("concert-application:0.0.0", "concert-application:latest"))
-        jvmArgs.set(listOf("-Dspring.profiles.active=production", "-Xmx2048m"))
+        jvmArgs.set(listOf("-Dspring.profiles.active=dev", "-Xmx2048m"))
     }
 }
