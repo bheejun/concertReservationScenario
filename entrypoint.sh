@@ -13,4 +13,4 @@ fi
 echo "$application_yml_content" > /app/config/application.yml
 
 # 원래의 애플리케이션 실행 명령어를 실행합니다, 위치를 지정합니다.
-exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=file:/app/config/application.yml
+exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=/app/config/application.yml
