@@ -8,4 +8,4 @@ application_yml_content=$(gcloud secrets versions access 1 --secret="projects/83
 echo "$application_yml_content" > /app/config/application.yml
 
 # 원래의 애플리케이션 실행 명령어를 실행합니다.
-exec java -jar /app/app.jar
+exec java -jar /app/concert-0.0.1-SNAPSHOT.jar
