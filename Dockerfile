@@ -26,7 +26,7 @@ FROM openjdk:17-jdk-slim
 EXPOSE 8080
 
 # Copy the jar from the previous stage
-COPY --from=build /workspace/app/build/libs/*.jar /app/concert-0.0.1-SNAPSHOT.jar
+COPY --from=build /workspace/app/build/libs/*.jar /app/
 
 # Command to run the application
 CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar"]
