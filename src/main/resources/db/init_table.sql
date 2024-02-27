@@ -1,11 +1,9 @@
--- Drop tables in the correct order
 drop table if exists seat cascade;
 drop table if exists reservation cascade;
 drop table if exists schedule cascade;
 drop table if exists concert cascade;
 drop table if exists member cascade;
 
--- Create tables
 CREATE TABLE member (
                         id BINARY(16) NOT NULL,
                         member_name VARCHAR(255) NOT NULL,
@@ -41,7 +39,6 @@ CREATE TABLE reservation (
                              pay_status BOOLEAN NOT NULL,
                              cancel_status BOOLEAN NOT NULL,
                              total_price DOUBLE NOT NULL,
-                             version BIGINT,
                              PRIMARY KEY (id),
                              FOREIGN KEY (member_id) REFERENCES member(id),
                              FOREIGN KEY (schedule_id) REFERENCES schedule(id)
@@ -53,7 +50,6 @@ CREATE TABLE seat (
                       is_booked BOOLEAN NOT NULL,
                       schedule_id BINARY(16),
                       reservation_id BINARY(16),
-                      version BIGINT,
                       PRIMARY KEY (id),
                       FOREIGN KEY (schedule_id) REFERENCES schedule(id),
                       FOREIGN KEY (reservation_id) REFERENCES reservation(id)

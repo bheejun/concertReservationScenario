@@ -1,8 +1,8 @@
 package com.example.concert.domain.member.controller
 
-import com.example.concert.domain.member.dto.request.AdminRegistrationRequestDto
-import com.example.concert.domain.member.dto.request.MemberLoginRequestDto
-import com.example.concert.domain.member.dto.request.MemberRegistrationRequestDto
+import com.example.concert.domain.member.dto.AdminRegistrationRequestDto
+import com.example.concert.domain.member.dto.MemberLoginRequestDto
+import com.example.concert.domain.member.dto.MemberRegistrationRequestDto
 import com.example.concert.domain.member.service.MemberService
 import com.example.concert.util.response.Response
 import jakarta.validation.Valid

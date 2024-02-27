@@ -1,8 +1,8 @@
 package com.example.concert.unittest.domain.member
 
-import com.example.concert.domain.member.dto.request.AdminRegistrationRequestDto
+import com.example.concert.domain.member.dto.AdminRegistrationRequestDto
 import org.assertj.core.api.Assertions.assertThat
-import com.example.concert.domain.member.dto.request.MemberRegistrationRequestDto
+import com.example.concert.domain.member.dto.MemberRegistrationRequestDto
 import com.example.concert.domain.member.model.Member
 import com.example.concert.domain.member.repository.MemberRepository
 import com.example.concert.domain.member.service.MemberServiceImpl

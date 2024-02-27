@@ -1,4 +1,4 @@
-package com.example.concert.domain.member.dto.request
+package com.example.concert.domain.member.dto
 
 data class MemberLoginRequestDto(
     val memberName : String,

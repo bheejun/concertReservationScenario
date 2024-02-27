@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import com.bmuschko.gradle.docker.tasks.image.*
 
 
 
@@ -34,7 +33,7 @@ dependencies {
 
     implementation ("org.springframework.boot:spring-boot-starter-validation")
 
-    runtimeOnly ("mysql:mysql-connector-java:8.0.33")
+    runtimeOnly("com.mysql:mysql-connector-j:8.3.0")
 
     implementation ("org.springframework.boot:spring-boot-starter-security")
 
