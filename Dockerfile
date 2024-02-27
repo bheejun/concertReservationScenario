@@ -5,11 +5,13 @@ FROM openjdk:17-jdk-slim AS build
 WORKDIR /workspace/app
 
 # Copy the Gradle configuration files
+COPY gradlew .
+COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
-
-# Copy the source code
 COPY src src
+
+RUN chmod +x ./gradlew
 
 # Build the application
 RUN ./gradlew build
