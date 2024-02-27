@@ -32,7 +32,7 @@ EXPOSE 8080
 
 RUN mkdir -p /app/config
 
-COPY --from=build /workspace/app/build/libs/*.jar /app/app.jar
+COPY --from=build /workspace/app/build/libs/*.jar /app/
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
