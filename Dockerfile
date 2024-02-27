@@ -1,10 +1,7 @@
-# Use the OpenJDK image to build your application
 FROM openjdk:17-jdk-slim AS build
 
-# Set the working directory inside the container
 WORKDIR /workspace/app
 
-# Copy the Gradle configuration files
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
@@ -19,14 +16,15 @@ RUN ./gradlew build -x test
 # Move to the application's jar file
 WORKDIR /workspace/app/build/libs
 
-# We can optionally use a smaller JDK for running the application
 FROM openjdk:17-jdk-slim
-
-# Expose the port the app runs on
 EXPOSE 8080
 
-# Copy the jar from the previous stage
-COPY --from=build /workspace/app/build/libs/*.jar /app/
+COPY --from=build /workspace/app/build/libs/*.jar /app/app.jar
 
-# Command to run the application
-CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar"]
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["java", "-jar", "/app/app.jar"]

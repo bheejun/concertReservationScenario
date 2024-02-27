@@ -12,7 +12,6 @@ steps:
 
 
 
-
 options:
   logging: LEGACY
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
