@@ -5,8 +5,8 @@ FROM openjdk:17-jdk-slim AS build
 WORKDIR /workspace/app
 
 # Copy the Gradle configuration files
-COPY build.gradle .
-COPY settings.gradle .
+COPY build.gradle.kts .
+COPY settings.gradle.kts .
 
 # Copy the source code
 COPY src src
