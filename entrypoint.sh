@@ -1,18 +1,28 @@
 #!/bin/sh
 
-# Secret Manager에서 설정 값을 가져옵니다.
+echo "Retrieving application.yml from Secret Manager..."
+
 application_yml_content=$(gcloud secrets versions access 1 --secret="concert-application-yml")
 
-# Secret retrieval validation
 if [ -z "$application_yml_content" ]; then
     echo "Failed to retrieve application.yml content from Secret Manager"
     exit 1
+else
+    echo "Successfully retrieved application.yml content"
 fi
 
-# 설정 값을 파일로 저장합니다.
+echo "Writing application.yml content to /app/config/application.yml..."
 echo "$application_yml_content" > /app/config/application.yml
 
-chmod +rwx /app/config/application.yml
+if [ $? -eq 0 ]; then
+    echo "Successfully wrote application.yml"
+else
+    echo "Failed to write application.yml"
+    exit 1
+fi
 
-# 원래의 애플리케이션 실행 명령어를 실행합니다, 위치를 지정합니다.
+chmod +rwx /app/config/application.yml
+echo "Set permissions for application.yml"
+
+echo "Executing java application..."
 exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=/app/config/application.yml
