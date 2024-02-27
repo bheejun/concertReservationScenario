@@ -19,22 +19,22 @@ RUN ./gradlew build -x test
 # Move to the application's jar file
 WORKDIR /workspace/app/build/libs
 
-# We can optionally use a smaller JDK for running the application
 FROM openjdk:17-jdk-slim
 
-# Expose the port the app runs on
+
+RUN apt-get update && apt-get install -y curl
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+RUN apt-get update && apt-get install -y google-cloud-sdk
+
 EXPOSE 8080
 
-# Copy the jar from the previous stage
-COPY --from=build /workspace/app/build/libs/*.jar /app/
+RUN mkdir -p /app/config
+
+COPY --from=build /workspace/app/build/libs/*.jar /app/app.jar
 
 COPY entrypoint.sh /entrypoint.sh
-
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
-
-# Command to run the application
-CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar"]
-
+CMD ["/entrypoint.sh"]
 
