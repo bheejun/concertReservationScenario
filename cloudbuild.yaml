@@ -10,17 +10,7 @@ steps:
     args: ['push',
            'asia-east1-docker.pkg.dev/cicd-415000/concert-ar/concert-app-image:$COMMIT_SHA']
 
-  # Entrypoint, timeout and environment variables
-#  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-#    entrypoint: 'gcloud'
-#    timeout: 240s
-#    args: ['compute', 'instances',
-#           'create-with-container', 'my-vm-name',
-#           '--container-image',
-#           'asia-east1-docker.pkg.dev/cicd-415000/concert-ar/concert-app-image:$COMMIT_SHA']
-#    env:
-#      - 'CLOUDSDK_COMPUTE_REGION=asia-east1'
-#      - 'CLOUDSDK_COMPUTE_ZONE=asia-east1'
+
 
 
 options:

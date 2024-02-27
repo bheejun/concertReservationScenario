@@ -1,23 +1,30 @@
-# Use your base image
+# Use the OpenJDK image to build your application
 FROM openjdk:17-jdk-slim AS build
 
-# Install dependencies required for wget and SSL to download dockerize
-RUN apt-get update && \
-    apt-get install -y wget libssl-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Set the working directory inside the container
+WORKDIR /workspace/app
 
-# Install dockerize
-ENV DOCKERIZE_VERSION v0.6.1
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+# Copy the Gradle configuration files
+COPY build.gradle .
+COPY settings.gradle .
 
-WORKDIR /app
+# Copy the source code
+COPY src src
 
-COPY ./build/libs/concert-0.0.1-SNAPSHOT.jar /app/concert-0.0.1-SNAPSHOT.jar
+# Build the application
+RUN ./gradlew build
 
+# Move to the application's jar file
+WORKDIR /workspace/app/build/libs
 
+# We can optionally use a smaller JDK for running the application
+FROM openjdk:17-jdk-slim
+
+# Expose the port the app runs on
 EXPOSE 8080
 
+# Copy the jar from the previous stage
+COPY --from=build /workspace/app/build/libs/*.jar /app/concert-0.0.1-SNAPSHOT.jar
+
+# Command to run the application
 CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar"]
