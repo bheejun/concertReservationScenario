@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Secret Manager에서 설정 값을 가져옵니다.
-application_yml_content=$(gcloud secrets versions access 1 --secret="projects/838833205273/secrets/concert-application-yml")
+application_yml_content=$(gcloud secrets versions access 1 --secret="concert-application-yml")
+
 
 
 # 설정 값을 파일로 저장합니다.
