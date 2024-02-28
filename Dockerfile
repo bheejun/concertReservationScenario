@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y google-cloud-sdk
 
 EXPOSE 8080
 
-RUN mkdir -p /app/config
+RUN mkdir -p /config
 
 COPY --from=build /workspace/app/build/libs/*.jar /app/
 

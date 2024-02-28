@@ -12,7 +12,7 @@ else
 fi
 
 echo "Writing application.yml content to /app/config/application.yml..."
-echo "$application_yml_content" > /app/config/application.yml
+echo "$application_yml_content" > /config/application.yml
 
 if [ $? -eq 0 ]; then
     echo "Successfully wrote application.yml"
@@ -21,10 +21,10 @@ else
     exit 1
 fi
 
-cat /app/config/application.yml
+cat /config/application.yml
 
-chmod +r /app/config/application.yml
+chmod +r /config/application.yml
 echo "Set permissions for application.yml"
 
 echo "Executing java application..."
-exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.import=file:/app/config/application.yml
+exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.import=file:/config/application.yml
