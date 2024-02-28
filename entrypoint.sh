@@ -21,7 +21,9 @@ else
     exit 1
 fi
 
-chmod +rwx /app/config/application.yml
+cat /app/config/application.yml
+
+chmod +r /app/config/application.yml
 echo "Set permissions for application.yml"
 
 echo "Executing java application..."
