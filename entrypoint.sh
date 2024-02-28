@@ -27,4 +27,4 @@ chmod +r /app/config/application.yml
 echo "Set permissions for application.yml"
 
 echo "Executing java application..."
-exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --Dspring.config.location=classpath:/app/config
+exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=classpath:/app/config/

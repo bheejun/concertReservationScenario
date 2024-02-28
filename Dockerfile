@@ -14,7 +14,7 @@ COPY src src
 RUN chmod +x ./gradlew
 
 # Build the application
-RUN ./gradlew build -x test
+RUN ./gradlew build -x test --parerall
 
 # Move to the application's jar file
 WORKDIR /workspace/app/build/libs
