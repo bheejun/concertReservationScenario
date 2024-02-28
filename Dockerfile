@@ -6,11 +6,12 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
-
-
-RUN chmod +x ./gradlew && ./gradlew build --no-daemon -x test --continue
-
 COPY src src
+
+
+
+RUN chmod +x ./gradlew
+
 
 RUN ./gradlew build --no-daemon -x test
 
