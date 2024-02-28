@@ -1,22 +1,19 @@
-# Use the OpenJDK image to build your application
 FROM openjdk:17-jdk-slim AS build
 
-# Set the working directory inside the container
 WORKDIR /workspace/app
 
-# Copy the Gradle configuration files
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
+
+
+RUN chmod +x ./gradlew && ./gradlew build --no-daemon -x test --continue
+
 COPY src src
 
-RUN chmod +x ./gradlew
+RUN ./gradlew build --no-daemon -x test
 
-# Build the application
-RUN ./gradlew build -x test --parerall
-
-# Move to the application's jar file
 WORKDIR /workspace/app/build/libs
 
 FROM openjdk:17-jdk-slim
