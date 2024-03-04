@@ -23,7 +23,7 @@ fi
 
 cat /config/application.yml
 
-chmod +r /config/application.yml
+chmod +rwx /config/application.yml
 echo "Set permissions for application.yml"
 
 echo "Executing java application..."

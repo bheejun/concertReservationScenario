@@ -33,7 +33,7 @@ RUN mkdir -p /config
 COPY --from=build /workspace/app/build/libs/*.jar /app/
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +xwr /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
 
