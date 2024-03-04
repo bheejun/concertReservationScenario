@@ -12,10 +12,10 @@ RUN ./gradlew build --no-daemon -x test
 FROM openjdk:17-jdk-slim
 EXPOSE 8080
 WORKDIR /app
-RUN mkdir -p /config
+RUN mkdir -p /app/config
 
 COPY --from=build /workspace/app/build/libs/*.jar /app/
-CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar", "--spring.config.location=file:/config/application.yml"]
+CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar", "--spring.config.location=file:/app/config/concert-application-yml:latest"]
 
 
 #FROM openjdk:17-jdk-slim
