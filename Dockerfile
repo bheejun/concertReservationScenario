@@ -15,7 +15,8 @@ WORKDIR /app
 RUN mkdir -p /app/config
 
 COPY --from=build /workspace/app/build/libs/*.jar /app/
-CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar", "--spring.config.location=file:/app/config/concert-application-yml:latest"]
+
+CMD ["/entrypoint.sh"]
 
 
 #FROM openjdk:17-jdk-slim
@@ -36,5 +37,4 @@ CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar", "--spring.config.locatio
 #COPY entrypoint.sh /entrypoint.sh
 #RUN chmod +xwr /entrypoint.sh
 #
-#CMD ["/entrypoint.sh"]
 

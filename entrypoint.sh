@@ -1,10 +1,8 @@
 #!/bin/sh
 
-echo "Retrieving application.yml from Secret Manager..."
+echo "Retrieving application.yml from Docker Volume..."
 
-application_yml_content=$(gcloud secrets versions access 1 --secret="concert-application-yml")
-
-if [ -z "$application_yml_content" ]; then
+if [ ! -f /app/config/concert-application-yml:latest ]; then
     echo "Failed to retrieve application.yml content from Secret Manager"
     exit 1
 else
@@ -12,7 +10,7 @@ else
 fi
 
 echo "Writing application.yml content to /app/config/application.yml..."
-echo "$application_yml_content" > /config/application.yml
+cp /app/config/concert-application-yml:latest /app/config/application.yml
 
 if [ $? -eq 0 ]; then
     echo "Successfully wrote application.yml"
@@ -21,10 +19,10 @@ else
     exit 1
 fi
 
-cat /config/application.yml
+cat /app/config/application.yml
 
-chmod +rwx /config/application.yml
+chmod +rwx /app/config/application.yml
 echo "Set permissions for application.yml"
 
 echo "Executing java application..."
-exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=file:/config/application.yml
+exec java -jar /app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=file:/app/config/application.yml
