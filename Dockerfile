@@ -10,6 +10,7 @@ RUN ./gradlew build --no-daemon -x test
 
 # 실행 환경
 FROM openjdk:17-jdk-slim
+EXPOSE 8080
 WORKDIR /app
 COPY --from=build /workspace/app/build/libs/*.jar /app/
 CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar"]
