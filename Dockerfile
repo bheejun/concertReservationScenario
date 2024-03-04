@@ -13,7 +13,7 @@ FROM openjdk:17-jdk-slim
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /workspace/app/build/libs/*.jar /app/
-CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/app/concert-0.0.1-SNAPSHOT.jar --spring.config.location=file:/config/application.yml "]
 
 #FROM openjdk:17-jdk-slim
 #
