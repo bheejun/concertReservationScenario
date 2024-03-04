@@ -3,6 +3,8 @@
 echo "Retrieving application.yml from Docker Volume..."
 
 if [ ! -f /app/config/concert-application-yml:latest ]; then
+    chmod +rx /app/config/concert-application-yml:latest
+    cat /app/config/concert-application-yml:latest
     echo "Failed to retrieve application.yml content from Secret Manager"
     exit 1
 else
