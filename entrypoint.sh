@@ -10,6 +10,7 @@ else
     echo "Successfully retrieved application.yml content"
 fi
 
+
 echo "Writing application.yml content to /app/config/application.yml..."
 cp /app/config/concert-application-yml:latest /app/config/application.yml
 
